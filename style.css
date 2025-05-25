@@ -32,14 +32,14 @@ body {
 
 h1 {
     color: #c71585; /* Rosa scuro/Medio Viola Rosso */
-    margin-bottom: 25px;
+    margin-bottom: 12px;
     font-size: 2.2em; /* Dimensione titolo principale */
 }
 
 h2 {
     color: #ff69b4; /* Rosa acceso (Hot Pink) */
     margin-top: 35px; /* Più spazio sopra i titoli di sezione */
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     font-size: 1.8em; /* Dimensione titoli di sezione */
 }
 
@@ -152,7 +152,7 @@ button:active {
 /* Stili per la selezione del livello */
 .level-selection {
     margin-top: 10px; /* Aggiunto margine sopra */
-    margin-bottom: 25px;
+    margin-bottom: 12px;
     padding: 10px;
     background-color: #fce4ec; /* Sfondo rosa molto chiaro per la sezione livelli */
     border-radius: 12px;
@@ -191,7 +191,7 @@ button:active {
 #domanda-tabellina, #domanda-divisione, #scomposizione-steps p {
     font-size: 1.3em; /* Testo più grande e leggibile */
     color: #333; /* Colore testo scuro standard */
-    margin-bottom: 18px; /* Spazio sotto la domanda/titolo */
+    margin-bottom: 4px; /* Spazio sotto la domanda/titolo */
     text-align: center; /* Assicura che il paragrafo sia centrato */
 }
 
@@ -199,13 +199,13 @@ button:active {
     display: flex;
     flex-direction: column;
     align-items: center; /* Centra i .scomposizione-passaggio-container */
-    margin-bottom: 15px; /* Spazio prima del risultato finale */
+    margin-bottom: 4px; /* Spazio prima del risultato finale */
 }
 
 .scomposizione-passaggio-container {
     display: flex;
     align-items: center; /* Allinea verticalmente gli elementi interni (parentesi, input, span) */
-    margin-bottom: 10px; /* Spazio tra i passaggi, sostituisce i <br> se li rimuoviamo */
+    margin-bottom: 5px; /* Spazio tra i passaggi, sostituisce i <br> se li rimuoviamo */
     padding: 5px; /* Un po' di padding interno per respiro */
 }
 
@@ -230,8 +230,8 @@ button:active {
     justify-content: center;  /* Centra gli elementi figli orizzontalmente */
     align-items: center;    /* Allinea gli elementi figli verticalmente (utile se hanno altezze diverse) */
     gap: 10px;                /* Spazio tra l'input e il bottone */
-    margin-top: 10px;         /* Spazio sopra il gruppo */
-    margin-bottom: 15px;      /* Spazio sotto il gruppo, prima del feedback */
+    margin-top: 8px;         /* Spazio sopra il gruppo */
+    margin-bottom: 12px;      /* Spazio sotto il gruppo, prima del feedback */
 }
 
 /* Aggiungi a style.css */
@@ -246,7 +246,7 @@ button:active {
 }
 
 .hint-text {
-    margin-top: 15px;
+    margin-top: 8px;
     padding: 10px 15px;
     background-color: #fffde7; /* Giallo molto pallido per lo sfondo del suggerimento */
     border: 1px solid #fff176; /* Bordo giallo chiaro */
@@ -351,7 +351,7 @@ button:active {
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-    margin-top: 20px;
+    margin-top: 10px;
 }
 
 #section-divider {
