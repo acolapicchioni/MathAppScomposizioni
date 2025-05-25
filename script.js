@@ -58,6 +58,10 @@ document.addEventListener('DOMContentLoaded', () => {
     risultatoDivisioneEl = document.getElementById('risposta-finale-divisione');
     restoFinaleDivisioneEl = document.getElementById('resto-finale-divisione');
 
+    // Pulsanti per tornare al menu
+    const tornaMenuTabellineBtn = document.getElementById('torna-menu-tabelline-btn');
+    const tornaMenuDivisioniBtn = document.getElementById('torna-menu-divisioni-btn');
+
     scomposizioneDividendoInputs = [
         document.getElementById('scomposizione-dividendo-1'),
         document.getElementById('scomposizione-dividendo-2'),
@@ -133,6 +137,18 @@ document.addEventListener('DOMContentLoaded', () => {
     showTabellineButton.addEventListener('click', () => generaDomandaTabellina());
     showDivisioniButton.addEventListener('click', () => generaDomandaDivisione());
     nuovaPartitaButtonEl.addEventListener('click', nuovaPartita);
+
+    if (tornaMenuTabellineBtn) {
+        tornaMenuTabellineBtn.addEventListener('click', tornaAlMenuPrincipale);
+    } else {
+        console.warn("WARN: Elemento 'torna-menu-tabelline-btn' non trovato.");
+    }
+
+    if (tornaMenuDivisioniBtn) {
+        tornaMenuDivisioniBtn.addEventListener('click', tornaAlMenuPrincipale);
+    } else {
+        console.warn("WARN: Elemento 'torna-menu-divisioni-btn' non trovato.");
+    }
 
     if (livelloDivisioneSelectEl) {
         livelloDivisioneSelectEl.addEventListener('change', (event) => {
@@ -212,6 +228,30 @@ function nuovaPartita() {
     activeSection = '';
 }
 
+function tornaAlMenuPrincipale() {
+    if (!modalitaSceltaEl || !gameContainerEl || !tabellineSectionEl || !divisioniSectionEl || !livelloDivisioneContainerEl || !welcomeMessageEl) {
+        console.error("tornaAlMenuPrincipale: Uno o più elementi contenitore principali sono null. Impossibile tornare al menu.");
+        return;
+    }
+    console.log("tornaAlMenuPrincipale: Ritorno al menu di scelta modalità.");
+
+    gameContainerEl.style.display = 'none';
+    tabellineSectionEl.style.display = 'none';
+    divisioniSectionEl.style.display = 'none';
+    livelloDivisioneContainerEl.style.display = 'none';
+    
+    modalitaSceltaEl.style.display = 'block';
+    welcomeMessageEl.textContent = `Ciao, ${playerName}! Scegli una nuova modalità o continua con la precedente:`; // Messaggio aggiornato
+    activeSection = '';
+
+    // Opzionale: pulire i campi di input e feedback delle sezioni di gioco
+    if (rispostaTabellinaInputEl) rispostaTabellinaInputEl.value = '';
+    if (feedbackTabellinaEl) feedbackTabellinaEl.textContent = '';
+    clearDivisionInputs(); // Funzione esistente per pulire gli input della divisione
+    if (feedbackDivisioneEl) feedbackDivisioneEl.textContent = '';
+    if (hintDivisioneEl) hintDivisioneEl.textContent = '';
+}
+
 function playSound(type) {
     try {
         const audio = new Audio(`sounds/${type}.mp3`);
@@ -245,6 +285,11 @@ function generaDomandaTabellina() {
     rispostaTabellinaInputEl = document.getElementById('risposta-tabellina');
     feedbackTabellinaEl = document.getElementById('feedback-tabellina');
 
+    // Rimuovi listener precedente se esiste, per evitare duplicati
+    if (rispostaTabellinaInputEl && rispostaTabellinaInputEl.handleEnterKey) {
+        rispostaTabellinaInputEl.removeEventListener('keypress', rispostaTabellinaInputEl.handleEnterKey);
+    }
+
     if (!domandaTabellinaEl) {
         console.error("generaDomandaTabellina: Elemento 'domanda-tabellina' NON TROVATO. Impossibile generare domanda.");
         if (feedbackTabellinaEl) feedbackTabellinaEl.textContent = "Errore: 'domanda-tabellina' non trovato."; else console.error("feedbackTabellinaEl non disponibile per messaggio errore.");
@@ -254,6 +299,15 @@ function generaDomandaTabellina() {
         console.error("generaDomandaTabellina: Elemento 'risposta-tabellina' NON TROVATO. Impossibile accettare risposta.");
         if (feedbackTabellinaEl) feedbackTabellinaEl.textContent = "Errore: 'risposta-tabellina' non trovato."; else console.error("feedbackTabellinaEl non disponibile per messaggio errore.");
         return;
+    } else {
+        // Definisci la funzione handler qui in modo che possa essere rimossa correttamente
+        rispostaTabellinaInputEl.handleEnterKey = function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault(); // Impedisce il comportamento predefinito (es. submit di un form)
+                controllaTabellina();
+            }
+        };
+        rispostaTabellinaInputEl.addEventListener('keypress', rispostaTabellinaInputEl.handleEnterKey);
     }
     if (!feedbackTabellinaEl) {
         console.warn("generaDomandaTabellina: Elemento 'feedback-tabellina' non trovato. Il feedback non verrà mostrato.");
