@@ -1,4 +1,4 @@
-# MathAppFiglie
+# MathAppScomposizioni
 
 Applicazione web interattiva per aiutare i bambini a fare pratica con la matematica (tabelline e divisioni con metodo di scomposizione).
 
