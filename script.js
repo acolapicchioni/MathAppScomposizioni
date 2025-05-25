@@ -181,8 +181,33 @@ function saveHighScore() {
     localStorage.setItem('highScoreMathApp', highScore.toString());
 }
 
-function updatePunteggio(punti) {
-    punteggio += punti;
+function updatePunteggio(puntiBase, moltiplicatoreParam) {
+    let moltiplicatore = moltiplicatoreParam;
+    
+    // Se moltiplicatoreParam non è fornito, lo determiniamo in base al livello di divisione
+    if (typeof moltiplicatore === 'undefined') {
+        if (activeSection === 'divisioni') {
+            switch (livelloDivisione) {
+                case 1:
+                    moltiplicatore = 1;
+                    break;
+                case 2:
+                    moltiplicatore = 1.5;
+                    break;
+                case 3:
+                    moltiplicatore = 2;
+                    break;
+                default:
+                    moltiplicatore = 1;
+            }
+        } else {
+            moltiplicatore = 1;
+        }
+    }
+
+    const puntiEffettivi = Math.round(puntiBase * moltiplicatore);
+    punteggio += puntiEffettivi;
+
     if (scoreEl) scoreEl.textContent = punteggio;
     else console.warn("updatePunteggio: scoreEl non trovato");
 
@@ -192,6 +217,7 @@ function updatePunteggio(punti) {
         else console.warn("updatePunteggio: highScoreEl non trovato per aggiornamento high score");
         saveHighScore();
     }
+    return puntiEffettivi; 
 }
 
 function resetPunteggio() {
@@ -262,8 +288,8 @@ function playSound(type) {
 }
 
 function calcolaPuntiBonus(elapsedTime) {
-    if (elapsedTime < 5) return 2;
-    if (elapsedTime < 10) return 1;
+    if (elapsedTime < 8) return 2;
+    if (elapsedTime < 15) return 1;
     return 0;
 }
 
@@ -368,34 +394,109 @@ function controllaTabellina() {
 
 function generaProblemaDivisione(livello) {
     console.log("Generating division problem (no remainder) for level:", livello, "(Type:", typeof livello, ")");
-    let minDividend, maxDividend, minDivisor, maxDivisor;
+    let minDivisor, maxDivisor;
+    let minDividend_guideline, maxDividend_guideline; // Rinominato per chiarezza
+
+    // numScomposizioniRichieste è una variabile globale, viene aggiornata qui
+    switch (livello) {
+        case '1':
+            minDivisor = 2; maxDivisor = 9;
+            numScomposizioniRichieste = 1;
+            minDividend_guideline = 10; maxDividend_guideline = 99; // Es. dividendi a 2 cifre
+            break;
+        case '2':
+            minDivisor = 2; maxDivisor = 9;
+            numScomposizioniRichieste = 2;
+            minDividend_guideline = 50; maxDividend_guideline = 199; // Es. dividendi che portano a quozienti fino a 20 con divisori comuni
+            break;
+        case '3':
+            minDivisor = 2; maxDivisor = 9;
+            numScomposizioniRichieste = 3;
+            minDividend_guideline = 70; maxDividend_guideline = 299; // Es. dividendi che portano a quozienti fino a 30
+            break;
+        default:
+            console.warn("Unknown level passed to generaProblemaDivisione. Defaulting to level 1 settings.");
+            minDivisor = 2; maxDivisor = 9;
+            numScomposizioniRichieste = 1;
+            minDividend_guideline = 10; maxDividend_guideline = 99;
+    }
+
+    let min_total_quotient_for_level;
+    let max_total_quotient_for_level;
 
     switch (livello) {
         case '1':
-            minDividend = 10; maxDividend = 99; minDivisor = 2; maxDivisor = 9;
-            numScomposizioniRichieste = 1;
+            min_total_quotient_for_level = 1; // Almeno 1
+            max_total_quotient_for_level = 10; // Massimo 10 per il quoziente totale
             break;
         case '2':
-            minDividend = 100; maxDividend = 999; minDivisor = 2; maxDivisor = 9;
-            numScomposizioniRichieste = 2;
+            min_total_quotient_for_level = numScomposizioniRichieste; // Almeno 1 per ogni "passaggio ideale"
+            max_total_quotient_for_level = numScomposizioniRichieste * 10; // Es. 2 * 10 = 20
             break;
         case '3':
-            minDividend = 1000; maxDividend = 9999; minDivisor = 2; maxDivisor = 9;
-            numScomposizioniRichieste = 3;
+            min_total_quotient_for_level = numScomposizioniRichieste;
+            max_total_quotient_for_level = numScomposizioniRichieste * 10; // Es. 3 * 10 = 30
             break;
-        default:
-            console.warn("Unknown level passed to generaProblemaDivisione. Defaulting to level 1.");
-            minDividend = 10; maxDividend = 99; minDivisor = 2; maxDivisor = 9;
-            numScomposizioniRichieste = 1;
+        default: // Coerente con il default precedente
+            min_total_quotient_for_level = 1;
+            max_total_quotient_for_level = 10;
     }
+    // Assicura che min non sia maggiore di max (non dovrebbe succedere con la logica attuale)
+    max_total_quotient_for_level = Math.max(max_total_quotient_for_level, min_total_quotient_for_level);
 
-    let dividend, divisor, quotient, remainder;
+
+    let dividend, divisor, quotient;
+    const remainder = 0; // Generiamo solo divisioni esatte
+    let attempts = 0;
+    const MAX_ATTEMPTS = 100; // Aumentato un po' per sicurezza con le guideline
+
     do {
-        dividend = Math.floor(Math.random() * (maxDividend - minDividend + 1)) + minDividend;
         divisor = Math.floor(Math.random() * (maxDivisor - minDivisor + 1)) + minDivisor;
-        quotient = Math.floor(dividend / divisor);
-        remainder = dividend % divisor;
-    } while (remainder !== 0);
+        
+        // Assicurati che il range del quoziente sia valido
+        let current_max_q = max_total_quotient_for_level;
+        let current_min_q = min_total_quotient_for_level;
+
+        // Adatta il range del quoziente se necessario per rispettare le guideline del dividendo con il divisore scelto
+        // current_min_q = Math.max(current_min_q, Math.ceil(minDividend_guideline / divisor));
+        // current_max_q = Math.min(current_max_q, Math.floor(maxDividend_guideline / divisor));
+
+        if (current_min_q > current_max_q) { // Se il range del quoziente diventa invalido con questo divisore
+            attempts++;
+            if (attempts > MAX_ATTEMPTS / 2 && minDivisor < maxDivisor) { // Se fatica, prova a cambiare strategia di scelta del divisore
+                 // Potrebbe essere utile un log qui o una strategia di fallback più robusta se i range sono troppo stretti
+            }
+            continue; // Prova un altro divisore
+        }
+        
+        quotient = Math.floor(Math.random() * (current_max_q - current_min_q + 1)) + current_min_q;
+        dividend = divisor * quotient;
+        attempts++;
+
+        // Verifica primaria: il quoziente deve essere nel range definito per il livello
+        // (già garantito dalla scelta del quoziente, ma una doppia verifica non fa male)
+        // e il dividendo deve essere entro le linee guida di grandezza.
+        if (dividend >= minDividend_guideline && dividend <= maxDividend_guideline &&
+            quotient >= min_total_quotient_for_level && quotient <= max_total_quotient_for_level) {
+            break; // Problema valido trovato
+        }
+
+        if (attempts >= MAX_ATTEMPTS) {
+            console.warn(`Max attempts (${MAX_ATTEMPTS}) reached for level ${livello}. Using last generated values or a fallback.`);
+            // Fallback se non si trova un problema ideale: usa l'ultimo generato se il quoziente è valido,
+            // altrimenti crea un problema minimo.
+            if (!(quotient >= min_total_quotient_for_level && quotient <= max_total_quotient_for_level)) {
+                console.warn("Last generated quotient was outside limits. Creating minimal fallback.");
+                divisor = minDivisor; // Usa il divisore minimo
+                quotient = min_total_quotient_for_level;
+                dividend = divisor * quotient;
+            }
+            // Se il quoziente era valido ma il dividendo fuori guideline, lo usiamo comunque.
+            console.log(`Fallback problem for level ${livello}: ${dividend} ÷ ${divisor} = ${quotient}`);
+            break; 
+        }
+    } while (true);
+
 
     console.log(`Division problem (no remainder): ${dividend} ÷ ${divisor} = ${quotient}. Steps: ${numScomposizioniRichieste}`);
     return { dividend, divisor, quotient, remainder };
@@ -571,14 +672,14 @@ function controllaDivisione() {
         if (scompQuotient1 === null) {
             feedbackDivisioneEl.textContent = "Inserisci il risultato!";
             feedbackDivisioneEl.className = 'feedback error';
-            if (hintDivisioneEl) hintDivisioneEl.textContent = '';
+            if (hintDivisioneEl) hintDivisioneEl.textContent = ''; // Clear previous hint
             scompQuotient1InputEl.focus();
             return;
         }
 
         if (scompQuotient1 === currentCorrectAnswer.quotient) {
             const bonus = calcolaPuntiBonus(elapsedTime);
-            updatePunteggio(1 + bonus);
+            updatePunteggio(1 + bonus); // Moltiplicatore gestito in updatePunteggio
             feedbackDivisioneEl.textContent = `Corretto, ${playerName}! +${1 + bonus} punti.`;
             feedbackDivisioneEl.className = 'feedback success';
             if (hintDivisioneEl) hintDivisioneEl.textContent = '';
@@ -589,7 +690,10 @@ function controllaDivisione() {
         } else {
             feedbackDivisioneEl.textContent = `Sbagliato, ${playerName}. La risposta corretta è ${currentCorrectAnswer.quotient}.`;
             feedbackDivisioneEl.className = 'feedback error';
-            if (hintDivisioneEl) hintDivisioneEl.textContent = `Ricorda: ${currentDividend} ÷ ${currentDivisor} = ?`;
+            if (hintDivisioneEl) {
+                hintDivisioneEl.textContent = `Ricorda: ${currentDividend} ÷ ${currentDivisor} = ?`;
+                // Non cancellare l'hint immediatamente, lascia che l'utente lo legga
+            }
             playSound('error');
             scompQuotient1InputEl.value = '';
             scompQuotient1InputEl.focus();
@@ -610,7 +714,7 @@ function controllaDivisione() {
     if (rispostaFinaleDivisioneInputEl.value === '') {
         feedbackDivisioneEl.textContent = "Inserisci la risposta finale!";
         feedbackDivisioneEl.className = 'feedback error';
-        if (hintDivisioneEl) hintDivisioneEl.textContent = '';
+        if (hintDivisioneEl) hintDivisioneEl.textContent = ''; // Clear previous hint
         return;
     }
 
@@ -636,73 +740,94 @@ function controllaDivisione() {
             parzialeCorretto = false; erroreScomposizione = true;
             hintMessage = `Controlla la prima scomposizione: ${decompDividend1} ÷ ${currentDivisor} non fa ${scompQuotient1}.`;
         }
-    } else if (decompDividend1 !== null || scompQuotient1 !== null) {
+    } else if (decompDividend1 !== null || scompQuotient1 !== null) { // Campi parzialmente riempiti
         parzialeCorretto = false; erroreScomposizione = true;
-        hintMessage = "Completa entrambe le caselle per ogni riga di scomposizione.";
+        hintMessage = "Completa entrambe le caselle per ogni riga di scomposizione usata.";
     }
 
     if (parzialeCorretto && decompDividend2 !== null && scompQuotient2 !== null) {
-        if (dividendoResiduo > 0 && decompDividend2 <= dividendoResiduo && decompDividend2 % currentDivisor === 0 && decompDividend2 / currentDivisor === scompQuotient2) {
+        if (dividendoResiduo >= 0 && decompDividend2 <= dividendoResiduo && decompDividend2 % currentDivisor === 0 && decompDividend2 / currentDivisor === scompQuotient2) {
             quozienteParzialeTotale += scompQuotient2;
             dividendoResiduo -= decompDividend2;
         } else {
             parzialeCorretto = false; erroreScomposizione = true;
-            if (decompDividend2 > dividendoResiduo) hintMessage = `Il secondo dividendo (${decompDividend2}) è maggiore del residuo (${dividendoResiduo}).`;
+            if (decompDividend2 > dividendoResiduo && dividendoResiduo >= 0) hintMessage = `Il secondo dividendo (${decompDividend2}) è maggiore del residuo (${dividendoResiduo}).`;
+            else if (dividendoResiduo < 0) hintMessage = `Hai già scomposto più del dividendo iniziale. Controlla i passaggi precedenti.`;
             else hintMessage = `Controlla la seconda scomposizione: ${decompDividend2} ÷ ${currentDivisor} non fa ${scompQuotient2}.`;
         }
-    } else if (parzialeCorretto && (decompDividend2 !== null || scompQuotient2 !== null)) {
+    } else if (parzialeCorretto && (decompDividend2 !== null || scompQuotient2 !== null)) { // Campi parzialmente riempiti
         parzialeCorretto = false; erroreScomposizione = true;
         hintMessage = "Completa entrambe le caselle per la seconda riga di scomposizione, se usata.";
     }
 
     if (parzialeCorretto && decompDividend3 !== null && scompQuotient3 !== null) {
-        if (dividendoResiduo > 0 && decompDividend3 <= dividendoResiduo && decompDividend3 % currentDivisor === 0 && decompDividend3 / currentDivisor === scompQuotient3) {
+        if (dividendoResiduo >= 0 && decompDividend3 <= dividendoResiduo && decompDividend3 % currentDivisor === 0 && decompDividend3 / currentDivisor === scompQuotient3) {
             quozienteParzialeTotale += scompQuotient3;
             dividendoResiduo -= decompDividend3;
         } else {
             parzialeCorretto = false; erroreScomposizione = true;
-            if (decompDividend3 > dividendoResiduo) hintMessage = `Il terzo dividendo (${decompDividend3}) è maggiore del residuo (${dividendoResiduo}).`;
+            if (decompDividend3 > dividendoResiduo && dividendoResiduo >= 0) hintMessage = `Il terzo dividendo (${decompDividend3}) è maggiore del residuo (${dividendoResiduo}).`;
+            else if (dividendoResiduo < 0) hintMessage = `Hai già scomposto più del dividendo iniziale. Controlla i passaggi precedenti.`;
             else hintMessage = `Controlla la terza scomposizione: ${decompDividend3} ÷ ${currentDivisor} non fa ${scompQuotient3}.`;
         }
-    } else if (parzialeCorretto && (decompDividend3 !== null || scompQuotient3 !== null)) {
+    } else if (parzialeCorretto && (decompDividend3 !== null || scompQuotient3 !== null)) { // Campi parzialmente riempiti
         parzialeCorretto = false; erroreScomposizione = true;
         hintMessage = "Completa entrambe le caselle per la terza riga di scomposizione, se usata.";
     }
+    
+    // Verifica finale se tutti i campi di scomposizione sono vuoti
+    const scomposizioneNonTentata = decompDividend1 === null && scompQuotient1 === null &&
+                                decompDividend2 === null && scompQuotient2 === null &&
+                                decompDividend3 === null && scompQuotient3 === null;
 
     if (erroreScomposizione) {
         feedbackDivisioneEl.textContent = `Errore nella scomposizione, ${playerName}.`;
         feedbackDivisioneEl.className = 'feedback error';
-        hintDivisioneEl.textContent = hintMessage;
+        hintDivisioneEl.textContent = hintMessage; // L'hint persiste
         playSound('error');
-    } else if (rispostaFinaleUtente === currentCorrectAnswer.quotient && quozienteParzialeTotale === currentCorrectAnswer.quotient && dividendoResiduo === 0) {
+    } else if (rispostaFinaleUtente === currentCorrectAnswer.quotient && quozienteParzialeTotale === currentCorrectAnswer.quotient && dividendoResiduo === 0 && !scomposizioneNonTentata) {
         const bonus = calcolaPuntiBonus(elapsedTime);
-        updatePunteggio(2 + bonus);
+        updatePunteggio(2 + bonus); // Moltiplicatore gestito in updatePunteggio
         feedbackDivisioneEl.textContent = `Corretto, ${playerName}! Ottima scomposizione! +${2 + bonus} punti.`;
         feedbackDivisioneEl.className = 'feedback success';
         hintDivisioneEl.textContent = '';
         playSound('success');
         if (bonus === 2) playSound('awesome'); else if (bonus === 1) playSound('good');
         setTimeout(generaDomandaDivisione, 2000);
-    } else if (rispostaFinaleUtente === currentCorrectAnswer.quotient && (decompDividend1 === null && decompDividend2 === null && decompDividend3 === null)) {
+    } else if (rispostaFinaleUtente === currentCorrectAnswer.quotient && scomposizioneNonTentata) {
         const bonus = calcolaPuntiBonus(elapsedTime);
-        updatePunteggio(1 + bonus);
-        feedbackDivisioneEl.textContent = `Risposta finale corretta, ${playerName}! +${1 + bonus} punti. La prossima volta prova a usare la scomposizione!`;
+        updatePunteggio(1 + bonus); // Punteggio base minore, moltiplicatore gestito in updatePunteggio
+        feedbackDivisioneEl.textContent = `Risposta finale corretta, ${playerName}! +${1 + bonus} punti.`;
         feedbackDivisioneEl.className = 'feedback success';
-        hintDivisioneEl.textContent = `La scomposizione aiuta a capire meglio!`;
+        hintDivisioneEl.textContent = `La scomposizione aiuta a capire meglio! Provala la prossima volta.`; // Hint persiste per un po'
         playSound('success');
         if (bonus >= 1) playSound('good');
-        setTimeout(generaDomandaDivisione, 2500);
-    } else {
+        setTimeout(() => {
+            if (hintDivisioneEl.textContent === `La scomposizione aiuta a capire meglio! Provala la prossima volta.`) {
+                 hintDivisioneEl.textContent = ''; // Cancella l'hint dopo un po' se non è cambiato
+            }
+            generaDomandaDivisione();
+        }, 3500); // Timeout più lungo per leggere l'hint
+    } else { // Risposta finale errata o scomposizione errata che porta a risultato finale errato
         feedbackDivisioneEl.textContent = `Sbagliato, ${playerName}. La risposta corretta è ${currentCorrectAnswer.quotient}.`;
         if (quozienteParzialeTotale !== currentCorrectAnswer.quotient || dividendoResiduo !== 0) {
-            hintDivisioneEl.textContent = `La tua scomposizione porta a ${quozienteParzialeTotale} con un resto di ${dividendoResiduo}. Controlla i passaggi.`;
+            if (!scomposizioneNonTentata){
+                 hintDivisioneEl.textContent = `La tua scomposizione porta a ${quozienteParzialeTotale} con un resto di ${dividendoResiduo}. Controlla i passaggi.`;
+            } else {
+                 hintDivisioneEl.textContent = `Prova a scomporre il dividendo (${currentDividend}) in parti più piccole.`;
+            }
         } else if (rispostaFinaleUtente !== currentCorrectAnswer.quotient) {
-            hintDivisioneEl.textContent = `La scomposizione sembra corretta (somma quozienti parziali = ${quozienteParzialeTotale}, residuo = ${dividendoResiduo}), ma la risposta finale (${rispostaFinaleUtente}) non corrisponde al quoziente atteso (${currentCorrectAnswer.quotient}).`;
+            // Questo caso implica che la scomposizione era corretta (quozienteParzialeTotale === currentCorrectAnswer.quotient && dividendoResiduo === 0)
+            // ma la rispostaFinaleUtente è diversa.
+            // Potrebbe accadere se l'utente corregge la scomposizione ma non la risposta finale, o viceversa.
+            hintDivisioneEl.textContent = `La scomposizione sembra corretta, ma la risposta finale (${rispostaFinaleUtente}) non corrisponde.`;
         } else {
+            // Caso generico se nessun altro hint specifico è stato impostato
             hintDivisioneEl.textContent = `Controlla la scomposizione e la risposta finale.`;
         }
         feedbackDivisioneEl.className = 'feedback error';
         playSound('error');
+        // Non cancellare l'hint, lascia che l'utente lo legga
     }
 }
 
