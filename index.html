@@ -28,6 +28,7 @@
         <div id="modalita-scelta" style="display:none;">
             <button id="show-tabelline">Gioca con le Tabelline</button>
             <button id="show-divisioni">Gioca con le Divisioni</button>
+            <button id="show-moltiplicazioni-scomposizione">Gioca con le Moltiplicazioni (Scomposizione)</button>
         </div>
 
         <div id="game-container" style="display:none;">
@@ -87,6 +88,54 @@
                 <p id="feedback-divisione"></p>
                 <p id="hint-divisione" class="hint-text"></p> 
                 <button id="torna-menu-divisioni-btn" class="torna-menu-btn">Cambia Modalità</button>
+            </div>
+
+            <div id="moltiplicazioni-scomposizione-section" class="game-section" style="display:none;">
+                <h2>✨ Moltiplicazioni con Scomposizione ✨</h2>
+                
+                <div id="livello-moltiplicazione-scomposizione-container" style="display:none;">
+                    <label for="livello-moltiplicazione-scomposizione-select">Scegli il livello: </label>
+                    <select id="livello-moltiplicazione-scomposizione-select">
+                        <option value="1">Facile (2 parti)</option>
+                        <option value="2">Medio (3 parti)</option>
+                        <!-- <option value="3">Difficile (es. 3 parti con numeri più grandi)</option> -->
+                    </select>
+                </div>
+
+                <p id="domanda-moltiplicazione-scomposizione"></p> 
+                <div id="scomposizione-moltiplicazione-steps">
+                    <p>Scomponi il primo fattore e moltiplica:</p>
+                    
+                    <!-- Passaggio Scomposizione 1 -->
+                    <div id="ms-passaggio-scomponi-1" class="scomposizione-passaggio-container">
+                        <input type="number" id="ms-scomponi-fattore-1-parte-1" class="scomp-input" placeholder="Parte 1"> 
+                        x <span id="ms-secondo-fattore-display-1"></span> = 
+                        <input type="number" id="ms-scomponi-prodotto-1" class="scomp-input-result" placeholder="Prodotto 1">
+                    </div>
+                    <br>
+                    <!-- Passaggio Scomposizione 2 -->
+                    <div id="ms-passaggio-scomponi-2" class="scomposizione-passaggio-container">
+                        <input type="number" id="ms-scomponi-fattore-1-parte-2" class="scomp-input" placeholder="Parte 2"> 
+                        x <span id="ms-secondo-fattore-display-2"></span> = 
+                        <input type="number" id="ms-scomponi-prodotto-2" class="scomp-input-result" placeholder="Prodotto 2">
+                    </div>
+                    <br>
+                     <!-- Passaggio Scomposizione 3 (inizialmente nascosto, per livello medio/difficile) -->
+                    <div id="ms-passaggio-scomponi-3" class="scomposizione-passaggio-container" style="display: none;">
+                        <input type="number" id="ms-scomponi-fattore-1-parte-3" class="scomp-input" placeholder="Parte 3"> 
+                        x <span id="ms-secondo-fattore-display-3"></span> = 
+                        <input type="number" id="ms-scomponi-prodotto-3" class="scomp-input-result" placeholder="Prodotto 3">
+                    </div>
+                    <br><br>
+                    <span id="ms-label-somma-prodotti">Somma dei prodotti parziali = Risultato finale:</span>
+                    <input type="number" id="ms-risposta-finale-moltiplicazione" class="scomp-input-final" placeholder="Risultato Totale">
+                </div>
+                <br>
+                <button onclick="controllaMoltiplicazioneScomposizione()">Controlla Moltiplicazione</button>
+                <button onclick="mostraAiutoMoltiplicazioneScomposizione()" id="ms-bottone-aiuto">Aiuto!</button> 
+                <p id="feedback-moltiplicazione-scomposizione"></p>
+                <p id="hint-moltiplicazione-scomposizione" class="hint-text"></p> 
+                <button id="torna-menu-moltiplicazioni-scomposizione-btn" class="torna-menu-btn">Cambia Modalità</button>
             </div>
         </div>
     </div>

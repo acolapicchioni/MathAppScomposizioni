@@ -370,3 +370,108 @@ button:active {
     line-height: 1.6; /* Improves readability for potentially multi-line messages */
     /* text-align: center; is inherited from .container, so not needed here unless to override */
 }
+
+/* Stili per la nuova sezione Moltiplicazioni con Scomposizione */
+/* Puoi duplicare e adattare stili simili a quelli di #divisioni-section se necessario */
+
+#moltiplicazioni-scomposizione-section h2 {
+    /* Esempio: se vuoi un colore diverso per il titolo di questa sezione */
+    /* color: #388e3c; /* Verde scuro per esempio */
+}
+
+#livello-moltiplicazione-scomposizione-container {
+    margin-bottom: 15px; /* Spazio sotto il selettore di livello */
+    /* Stili simili a #livello-divisione-container se necessario */
+}
+
+#livello-moltiplicazione-scomposizione-container label {
+    margin-right: 8px;
+    font-weight: bold;
+    color: #555;
+}
+
+#livello-moltiplicazione-scomposizione-select {
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    font-size: 1em;
+}
+
+#domanda-moltiplicazione-scomposizione {
+    font-size: 1.3em;
+    color: #333;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+#scomposizione-moltiplicazione-steps {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+#scomposizione-moltiplicazione-steps > p { /* Il testo "Scomponi il primo fattore..." */
+    font-size: 1.1em;
+    color: #444;
+    margin-bottom: 8px;
+}
+
+/* I .scomposizione-passaggio-container sono già stilizzati globalmente, 
+   ma potresti voler aggiungere specificità se necessario, es. per gli span dei fattori */
+#scomposizione-moltiplicazione-steps .scomposizione-passaggio-container span[id^="ms-secondo-fattore-display-"] {
+    font-weight: bold;
+    color: #d81b60; /* Un rosa/magenta per il secondo fattore */
+    font-size: 1.1em;
+}
+
+#ms-label-somma-prodotti {
+    display: block; /* Per andare a capo prima dell'input finale */
+    margin-top: 10px;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Stili per i bottoni specifici della sezione, se necessario */
+/* #ms-bottone-aiuto { ... } */
+
+/* Stili per feedback e hint, usando le classi e ID esistenti se il comportamento è lo stesso */
+#feedback-moltiplicazione-scomposizione {
+    /* Erediterà gli stili da #feedback-divisione se usi la stessa logica di classi/attributi per i colori */
+    /* Altrimenti, definisci qui stili simili a #feedback-divisione e #feedback-tabellina */
+    margin-top: 15px;
+    font-weight: bold;
+    font-size: 1.15em;
+    padding: 12px 15px;
+    border-radius: 8px;
+    display: block; 
+    width: fit-content; 
+    min-width: 250px;   
+    max-width: 80%;     
+    text-align: center; 
+    line-height: 1.5;
+    background-color: #f0f0f0; 
+    border: 1px solid #ccc;    
+    color: #333;               
+    min-height: 1.5em;         
+    box-sizing: border-box;    
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#hint-moltiplicazione-scomposizione {
+    /* Erediterà gli stili da .hint-text */
+    margin-top: 8px;
+}
+
+/* Se vuoi che i bottoni "Controlla" e "Aiuto" in questa sezione abbiano uno stile particolare, 
+   puoi targettarli con i loro ID specifici (es. onclick="controllaMoltiplicazioneScomposizione()" 
+   non è un selettore CSS, ma puoi dare ID ai bottoni se non li hanno già) 
+   o tramite un wrapper specifico per i controlli di questa sezione. */
+
+/* Esempio per il pulsante "Cambia Modalità" specifico */
+#torna-menu-moltiplicazioni-scomposizione-btn {
+    /* Eredita da .torna-menu-btn o aggiungi/sovrascrivi stili qui */
+    /* margin-top: 15px; */
+}

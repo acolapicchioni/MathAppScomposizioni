@@ -2,9 +2,10 @@
 // Queste verranno inizializzate in DOMContentLoaded
 let playerNameOverlayEl, playerNameInputEl, startGameButtonEl,
     scoreContainerEl, scoreEl, highScoreEl, welcomeMessageEl,
-    modalitaSceltaEl, showTabellineButton, showDivisioniButton,
-    gameContainerEl, tabellineSectionEl, divisioniSectionEl,
+    modalitaSceltaEl, showTabellineButton, showDivisioniButton, showMoltiplicazioniScomposizioneButton,
+    gameContainerEl, tabellineSectionEl, divisioniSectionEl, moltiplicazioniScomposizioneSectionEl,
     livelloDivisioneContainerEl, livelloDivisioneSelectEl,
+    livelloMoltiplicazioneScomposizioneContainerEl, livelloMoltiplicazioneScomposizioneSelectEl,
     nuovaPartitaButtonEl, scomposizionePassaggi, risultatoDivisioneEl, restoFinaleDivisioneEl;
 
 // Variabili di stato del gioco
@@ -13,10 +14,13 @@ let punteggio = 0;
 let highScore = 0;
 let currentCorrectAnswer;
 let currentDividend, currentDivisor;
+let currentFactor1, currentFactor2;
 let questionStartTime;
 let livelloDivisione = 1;
-let activeSection = ''; // 'tabelline' or 'divisioni'
+let livelloMoltiplicazioneScomposizione = 1;
+let activeSection = ''; // 'tabelline', 'divisioni', or 'moltiplicazioni-scomposizione'
 let numScomposizioniRichieste = 1;
+let numScomposizioniMoltiplicazioneRichieste = 2;
 
 // DOM elements specifici per le tabelline (inizializzati in generaDomandaTabellina)
 let domandaTabellinaEl, rispostaTabellinaInputEl, feedbackTabellinaEl;
@@ -26,6 +30,13 @@ let domandaDivisioneEl, decompDividend1InputEl, scompQuotient1InputEl,
     decompDividend2InputEl, scompQuotient2InputEl, decompDividend3InputEl,
     scompQuotient3InputEl, rispostaFinaleDivisioneInputEl,
     feedbackDivisioneEl, hintDivisioneEl;
+
+// DOM elements specifici per le Moltiplicazioni con Scomposizione
+let domandaMoltiplicazioneScomposizioneEl, msScomponiFattore1Parte1InputEl, msSecondoFattoreDisplay1El, msScomponiProdotto1InputEl,
+    msScomponiFattore1Parte2InputEl, msSecondoFattoreDisplay2El, msScomponiProdotto2InputEl,
+    msScomponiFattore1Parte3InputEl, msSecondoFattoreDisplay3El, msScomponiProdotto3InputEl,
+    msRispostaFinaleMoltiplicazioneInputEl, feedbackMoltiplicazioneScomposizioneEl, hintMoltiplicazioneScomposizioneEl,
+    msPassaggioScomponi1El, msPassaggioScomponi2El, msPassaggioScomponi3El;
 
 // Ensure these are declared globally so they are accessible by functions outside DOMContentLoaded
 let scomposizioneDividendoInputs, scomposizioneQuozienteInputs;
@@ -46,12 +57,16 @@ document.addEventListener('DOMContentLoaded', () => {
     modalitaSceltaEl = document.getElementById('modalita-scelta');
     showTabellineButton = document.getElementById('show-tabelline');
     showDivisioniButton = document.getElementById('show-divisioni');
+    showMoltiplicazioniScomposizioneButton = document.getElementById('show-moltiplicazioni-scomposizione');
 
     gameContainerEl = document.getElementById('game-container');
     tabellineSectionEl = document.getElementById('tabelline-section');
     divisioniSectionEl = document.getElementById('divisioni-section');
+    moltiplicazioniScomposizioneSectionEl = document.getElementById('moltiplicazioni-scomposizione-section');
     livelloDivisioneContainerEl = document.getElementById('livello-divisione-container');
     livelloDivisioneSelectEl = document.getElementById('livello-divisione-select');
+    livelloMoltiplicazioneScomposizioneContainerEl = document.getElementById('livello-moltiplicazione-scomposizione-container');
+    livelloMoltiplicazioneScomposizioneSelectEl = document.getElementById('livello-moltiplicazione-scomposizione-select');
 
     nuovaPartitaButtonEl = document.getElementById('nuova-partita-button');
 
@@ -61,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Pulsanti per tornare al menu
     const tornaMenuTabellineBtn = document.getElementById('torna-menu-tabelline-btn');
     const tornaMenuDivisioniBtn = document.getElementById('torna-menu-divisioni-btn');
+    const tornaMenuMoltiplicazioniScomposizioneBtn = document.getElementById('torna-menu-moltiplicazioni-scomposizione-btn');
 
     scomposizioneDividendoInputs = [
         document.getElementById('scomposizione-dividendo-1'),
@@ -87,10 +103,13 @@ document.addEventListener('DOMContentLoaded', () => {
         'modalita-scelta': modalitaSceltaEl,
         'show-tabelline': showTabellineButton,
         'show-divisioni': showDivisioniButton,
+        'show-moltiplicazioni-scomposizione': showMoltiplicazioniScomposizioneButton,
         'game-container': gameContainerEl,
         'tabelline-section': tabellineSectionEl,
         'divisioni-section': divisioniSectionEl,
+        'moltiplicazioni-scomposizione-section': moltiplicazioniScomposizioneSectionEl,
         'livello-divisione-container': livelloDivisioneContainerEl,
+        'livello-moltiplicazione-scomposizione-container': livelloMoltiplicazioneScomposizioneContainerEl,
         'nuova-partita-button': nuovaPartitaButtonEl,
         'risposta-finale-divisione': risultatoDivisioneEl,
         'resto-finale-divisione': restoFinaleDivisioneEl
@@ -126,6 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (startGameButtonEl) startGameButtonEl.disabled = true;
         if (showTabellineButton) showTabellineButton.disabled = true;
         if (showDivisioniButton) showDivisioniButton.disabled = true;
+        if (showMoltiplicazioniScomposizioneButton) showMoltiplicazioniScomposizioneButton.disabled = true;
         console.error("DOMContentLoaded: Setup interrotto a causa di elementi critici mancanti.");
         return;
     }
@@ -136,6 +156,11 @@ document.addEventListener('DOMContentLoaded', () => {
     startGameButtonEl.addEventListener('click', startGame);
     showTabellineButton.addEventListener('click', () => generaDomandaTabellina());
     showDivisioniButton.addEventListener('click', () => generaDomandaDivisione());
+    if (showMoltiplicazioniScomposizioneButton) {
+        showMoltiplicazioniScomposizioneButton.addEventListener('click', () => generaDomandaMoltiplicazioneScomposizione());
+    } else {
+        console.warn("WARN: Elemento 'show-moltiplicazioni-scomposizione' non trovato.");
+    }
     nuovaPartitaButtonEl.addEventListener('click', nuovaPartita);
 
     if (tornaMenuTabellineBtn) {
@@ -150,6 +175,12 @@ document.addEventListener('DOMContentLoaded', () => {
         console.warn("WARN: Elemento 'torna-menu-divisioni-btn' non trovato.");
     }
 
+    if (tornaMenuMoltiplicazioniScomposizioneBtn) {
+        tornaMenuMoltiplicazioniScomposizioneBtn.addEventListener('click', tornaAlMenuPrincipale);
+    } else {
+        console.warn("WARN: Elemento 'torna-menu-moltiplicazioni-scomposizione-btn' non trovato.");
+    }
+
     if (livelloDivisioneSelectEl) {
         livelloDivisioneSelectEl.addEventListener('change', (event) => {
             livelloDivisione = parseInt(event.target.value);
@@ -159,6 +190,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     } else {
         console.warn("WARN: Elemento 'livello-divisione-select' non trovato. Selezione livello divisione non funzionerà.");
+    }
+
+    if (livelloMoltiplicazioneScomposizioneSelectEl) {
+        livelloMoltiplicazioneScomposizioneSelectEl.addEventListener('change', (event) => {
+            livelloMoltiplicazioneScomposizione = parseInt(event.target.value);
+            if (activeSection === 'moltiplicazioni-scomposizione') {
+                generaDomandaMoltiplicazioneScomposizione();
+            }
+        });
+    } else {
+        console.warn("WARN: Elemento 'livello-moltiplicazione-scomposizione-select' non trovato. Selezione livello moltiplicazione non funzionerà.");
     }
 
     playerNameOverlayEl.style.display = 'flex';
@@ -183,8 +225,7 @@ function saveHighScore() {
 
 function updatePunteggio(puntiBase, moltiplicatoreParam) {
     let moltiplicatore = moltiplicatoreParam;
-    
-    // Se moltiplicatoreParam non è fornito, lo determiniamo in base al livello di divisione
+
     if (typeof moltiplicatore === 'undefined') {
         if (activeSection === 'divisioni') {
             switch (livelloDivisione) {
@@ -196,6 +237,17 @@ function updatePunteggio(puntiBase, moltiplicatoreParam) {
                     break;
                 case 3:
                     moltiplicatore = 2;
+                    break;
+                default:
+                    moltiplicatore = 1;
+            }
+        } else if (activeSection === 'moltiplicazioni-scomposizione') {
+            switch (livelloMoltiplicazioneScomposizione) {
+                case 1:
+                    moltiplicatore = 1.2;
+                    break;
+                case 2:
+                    moltiplicatore = 1.8;
                     break;
                 default:
                     moltiplicatore = 1;
@@ -217,7 +269,7 @@ function updatePunteggio(puntiBase, moltiplicatoreParam) {
         else console.warn("updatePunteggio: highScoreEl non trovato per aggiornamento high score");
         saveHighScore();
     }
-    return puntiEffettivi; 
+    return puntiEffettivi;
 }
 
 function resetPunteggio() {
@@ -241,7 +293,7 @@ function startGame() {
 }
 
 function nuovaPartita() {
-    if (!playerNameInputEl || !playerNameOverlayEl || !modalitaSceltaEl || !gameContainerEl || !livelloDivisioneContainerEl) {
+    if (!playerNameInputEl || !playerNameOverlayEl || !modalitaSceltaEl || !gameContainerEl || !livelloDivisioneContainerEl || !livelloMoltiplicazioneScomposizioneContainerEl) {
         console.error("nuovaPartita: Uno o più elementi contenitore principali sono null. Impossibile resettare correttamente.");
         return;
     }
@@ -251,11 +303,12 @@ function nuovaPartita() {
     modalitaSceltaEl.style.display = 'none';
     gameContainerEl.style.display = 'none';
     livelloDivisioneContainerEl.style.display = 'none';
+    livelloMoltiplicazioneScomposizioneContainerEl.style.display = 'none';
     activeSection = '';
 }
 
 function tornaAlMenuPrincipale() {
-    if (!modalitaSceltaEl || !gameContainerEl || !tabellineSectionEl || !divisioniSectionEl || !livelloDivisioneContainerEl || !welcomeMessageEl) {
+    if (!modalitaSceltaEl || !gameContainerEl || !tabellineSectionEl || !divisioniSectionEl || !moltiplicazioniScomposizioneSectionEl || !livelloDivisioneContainerEl || !livelloMoltiplicazioneScomposizioneContainerEl || !welcomeMessageEl) {
         console.error("tornaAlMenuPrincipale: Uno o più elementi contenitore principali sono null. Impossibile tornare al menu.");
         return;
     }
@@ -264,18 +317,22 @@ function tornaAlMenuPrincipale() {
     gameContainerEl.style.display = 'none';
     tabellineSectionEl.style.display = 'none';
     divisioniSectionEl.style.display = 'none';
+    moltiplicazioniScomposizioneSectionEl.style.display = 'none';
     livelloDivisioneContainerEl.style.display = 'none';
-    
+    livelloMoltiplicazioneScomposizioneContainerEl.style.display = 'none';
+
     modalitaSceltaEl.style.display = 'block';
-    welcomeMessageEl.textContent = `Ciao, ${playerName}! Scegli una nuova modalità o continua con la precedente:`; // Messaggio aggiornato
+    welcomeMessageEl.textContent = `Ciao, ${playerName}! Scegli una nuova modalità o continua con la precedente:`;
     activeSection = '';
 
-    // Opzionale: pulire i campi di input e feedback delle sezioni di gioco
     if (rispostaTabellinaInputEl) rispostaTabellinaInputEl.value = '';
     if (feedbackTabellinaEl) feedbackTabellinaEl.textContent = '';
-    clearDivisionInputs(); // Funzione esistente per pulire gli input della divisione
+    clearDivisionInputs();
     if (feedbackDivisioneEl) feedbackDivisioneEl.textContent = '';
     if (hintDivisioneEl) hintDivisioneEl.textContent = '';
+    clearMoltiplicazioneScomposizioneInputs();
+    if (feedbackMoltiplicazioneScomposizioneEl) feedbackMoltiplicazioneScomposizioneEl.textContent = '';
+    if (hintMoltiplicazioneScomposizioneEl) hintMoltiplicazioneScomposizioneEl.textContent = '';
 }
 
 function playSound(type) {
@@ -293,589 +350,357 @@ function calcolaPuntiBonus(elapsedTime) {
     return 0;
 }
 
-function generaDomandaTabellina() {
-    console.log("generaDomandaTabellina: Inizio esecuzione.");
-    if (!tabellineSectionEl || !divisioniSectionEl || !modalitaSceltaEl || !gameContainerEl || !livelloDivisioneContainerEl) {
-        console.error("generaDomandaTabellina: ERRORE CRITICO - Elementi contenitore globali (es. tabellineSectionEl, modalitaSceltaEl) non trovati. Impossibile continuare.");
+// --- Funzioni per Moltiplicazioni con Scomposizione ---
+
+function clearMoltiplicazioneScomposizioneInputs() {
+    console.log("clearMoltiplicazioneScomposizioneInputs: Pulizia input.");
+    if (msScomponiFattore1Parte1InputEl) msScomponiFattore1Parte1InputEl.value = '';
+    if (msScomponiProdotto1InputEl) msScomponiProdotto1InputEl.value = '';
+    if (msScomponiFattore1Parte2InputEl) msScomponiFattore1Parte2InputEl.value = '';
+    if (msScomponiProdotto2InputEl) msScomponiProdotto2InputEl.value = '';
+    if (msScomponiFattore1Parte3InputEl) msScomponiFattore1Parte3InputEl.value = '';
+    if (msScomponiProdotto3InputEl) msScomponiProdotto3InputEl.value = '';
+    if (msRispostaFinaleMoltiplicazioneInputEl) msRispostaFinaleMoltiplicazioneInputEl.value = '';
+}
+
+function generaProblemaMoltiplicazioneScomposizione(livello) {
+    console.log(`generaProblemaMoltiplicazioneScomposizione: Livello ${livello}`);
+    let fattore1, fattore2, prodotto;
+    let partiScompostePerHint = []; // This will be the one for hints
+    let prodottiParzialiPerHint = [];
+
+    switch (livello) {
+        case 1: // 2 parts
+            numScomposizioniMoltiplicazioneRichieste = 2;
+            fattore1 = Math.floor(Math.random() * 89) + 11; // 11-99
+            fattore2 = Math.floor(Math.random() * 8) + 2;   // 2-9
+
+            let p1_lvl1 = Math.floor(fattore1 / 10) * 10;
+            let p2_lvl1 = fattore1 - p1_lvl1;
+
+            if (p2_lvl1 === 0 && p1_lvl1 === fattore1) { // e.g., fattore1 = 30, p1=30, p2=0
+                if (p1_lvl1 >= 20) partiScompostePerHint = [p1_lvl1 - 10, 10]; // 30 -> [20, 10]
+                else partiScompostePerHint = [Math.floor(p1_lvl1/2), Math.ceil(p1_lvl1/2)]; // 10 -> [5,5]
+            } else if (p1_lvl1 === 0 && p2_lvl1 === fattore1) { // e.g., fattore1 = 7 (though range is 11-99)
+                 partiScompostePerHint = [Math.floor(p2_lvl1/2), Math.ceil(p2_lvl1/2)];
+            } else {
+                partiScompostePerHint = [p1_lvl1, p2_lvl1]; // e.g. 34 -> [30, 4]
+            }
+            // Ensure two positive parts
+            if (partiScompostePerHint.length === 1 || partiScompostePerHint.some(p => p <= 0)) {
+                partiScompostePerHint = [Math.floor(fattore1/2), fattore1 - Math.floor(fattore1/2)];
+            }
+            break;
+        case 2: // 3 parts
+            numScomposizioniMoltiplicazioneRichieste = 3;
+            fattore1 = Math.floor(Math.random() * 150) + 25; // 25 to 174
+            fattore2 = Math.floor(Math.random() * 8) + 2;   // 2 to 9
+
+            if (fattore1 >= 100) { // 100-174
+                let h = 100;
+                let rem = fattore1 - h; // 0-74
+                if (rem === 0) partiScompostePerHint = [50, 30, 20]; // For 100
+                else if (rem < 10) partiScompostePerHint = [h, Math.floor(rem / 2), Math.ceil(rem / 2)]; // For 101-109 -> [100, x, y]
+                else { // rem 10-74
+                    let t_rem = Math.floor(rem / 10) * 10;
+                    let u_rem = rem % 10;
+                    if (u_rem === 0) partiScompostePerHint = [h, t_rem / 2, t_rem / 2]; // For 110, 120... -> [100, t_rem/2, t_rem/2]
+                    else partiScompostePerHint = [h, t_rem, u_rem]; // For 123 -> [100, 20, 3]
+                }
+            } else { // fattore1 is 25-99
+                let t_f1 = Math.floor(fattore1 / 10) * 10;
+                let u_f1 = fattore1 % 10;
+                if (u_f1 === 0) { // 30, 40 .. 90 (fattore1 >= 25, so t_f1 >= 20)
+                    partiScompostePerHint = [10, 10, fattore1 - 20]; // e.g. 30 -> [10,10,10], 90 -> [10,10,70]
+                } else { // Units digit is not 0. e.g. 25, 34, 99
+                    if (t_f1 >= 10) { // fattore1 >= 25 means t_f1 is 20,30...
+                         partiScompostePerHint = [t_f1 - 10, 10, u_f1]; // e.g. 25 -> [10,10,5]. 34 -> [20,10,4]
+                    } else { // Should not happen for fattore1 >= 25
+                        let p1 = Math.floor(fattore1/3); let p2 = Math.floor(fattore1/3);
+                        partiScompostePerHint = [p1, p2, fattore1-p1-p2];
+                    }
+                }
+            }
+            // Ensure 3 positive parts that sum correctly
+            partiScompostePerHint = partiScompostePerHint.filter(p => p > 0);
+            if (partiScompostePerHint.length !== 3 || partiScompostePerHint.reduce((a,b)=>a+b,0) !== fattore1) {
+                console.warn(`Adjusting scomposition for ${fattore1} from ${partiScompostePerHint.join('+')} to 3 parts.`);
+                partiScompostePerHint = [];
+                let p1 = Math.max(1, Math.floor(fattore1 / 3));
+                let p2 = Math.max(1, Math.floor(fattore1 / 3));
+                let p3 = fattore1 - p1 - p2;
+                if (p3 <= 0) { // if p1,p2 were too large
+                    p1 = Math.max(1, Math.floor(fattore1 / numScomposizioniMoltiplicazioneRichieste) -1 );
+                    p2 = Math.max(1, Math.floor(fattore1 / numScomposizioniMoltiplicazioneRichieste) -1 );
+                    p3 = fattore1 - p1 - p2;
+                }
+                partiScompostePerHint = [p1,p2,p3].map(p => p <= 0 ? 1 : p); // Ensure positive
+                // Final sum adjustment
+                let currentSum = partiScompostePerHint.reduce((a,b)=>a+b,0);
+                if (currentSum !== fattore1) {
+                    partiScompostePerHint[partiScompostePerHint.length-1] += (fattore1 - currentSum);
+                }
+                 partiScompostePerHint = partiScompostePerHint.filter(p => p > 0); // Final safety filter
+                 if (partiScompostePerHint.length !== 3) { // Absolute fallback
+                     partiScompostePerHint = [1,1,fattore1-2];
+                     if (fattore1 === 2) partiScompostePerHint = [1,1,0]; // Will be filtered, error
+                     if (fattore1 < 2) partiScompostePerHint = [1,0,0]; // error
+                 }
+            }
+
+            break;
+        default: // Fallback to level 1 logic if level is unrecognized
+            numScomposizioniMoltiplicazioneRichieste = 2;
+            fattore1 = Math.floor(Math.random() * 89) + 11;
+            fattore2 = Math.floor(Math.random() * 8) + 2;
+            let p1_def = Math.floor(fattore1 / 10) * 10;
+            let p2_def = fattore1 - p1_def;
+            if (p2_def === 0) partiScompostePerHint = [p1_def - 10, 10]; else partiScompostePerHint = [p1_def, p2_def];
+            if (partiScompostePerHint.some(p => p <= 0)) partiScompostePerHint = [Math.floor(fattore1/2), fattore1 - Math.floor(fattore1/2)];
+
+    }
+
+    // Final check on partiScompostePerHint to ensure they are valid for the number of scomposizioni
+    partiScompostePerHint = partiScompostePerHint.filter(p => p > 0);
+    if (partiScompostePerHint.length !== numScomposizioniMoltiplicazioneRichieste || partiScompostePerHint.reduce((a,b)=>a+b,0) !== fattore1) {
+        console.error(`FALLBACK: Scomposition for ${fattore1} into ${numScomposizioniMoltiplicazioneRichieste} parts failed. Original: ${partiScompostePerHint.join('+')}`);
+        partiScompostePerHint = [];
+        let basePart = Math.max(1, Math.floor(fattore1 / numScomposizioniMoltiplicazioneRichieste));
+        for(let i=0; i < numScomposizioniMoltiplicazioneRichieste -1; i++) {
+            partiScompostePerHint.push(basePart);
+        }
+        let lastPart = fattore1 - (basePart * (numScomposizioniMoltiplicazioneRichieste -1));
+        partiScompostePerHint.push(Math.max(1, lastPart)); // Ensure last part is at least 1
+
+        // Adjust sum if making last part 1 caused issues
+        let finalSum = partiScompostePerHint.reduce((a,b)=>a+b,0);
+        if (finalSum !== fattore1) {
+            partiScompostePerHint[partiScompostePerHint.length-1] += (fattore1 - finalSum);
+        }
+        // One last check for positivity after adjustment
+        partiScompostePerHint = partiScompostePerHint.map(p => p <= 0 ? 1 : p);
+        finalSum = partiScompostePerHint.reduce((a,b)=>a+b,0);
+        if (finalSum !== fattore1) { // Adjust again if mapping to 1 caused sum issue
+             partiScompostePerHint[partiScompostePerHint.length-1] += (fattore1 - finalSum);
+        }
+    }
+
+
+    prodotto = fattore1 * fattore2;
+    prodottiParzialiPerHint = partiScompostePerHint.map(parte => parte * fattore2);
+
+    currentFactor1 = fattore1;
+    currentFactor2 = fattore2;
+
+    console.log(`Moltiplicazione: ${fattore1} x ${fattore2} = ${prodotto}. Parti (per hint): ${partiScompostePerHint.join('+')}, Prodotti Parziali (per hint): ${prodottiParzialiPerHint.join('+')}`);
+    return { fattore1, fattore2, prodotto, partiScomposte: partiScompostePerHint, prodottiParziali: prodottiParzialiPerHint, numScomposizioni: numScomposizioniMoltiplicazioneRichieste };
+}
+
+function generaDomandaMoltiplicazioneScomposizione() {
+    console.log("generaDomandaMoltiplicazioneScomposizione: Inizio.");
+
+    domandaMoltiplicazioneScomposizioneEl = document.getElementById('domanda-moltiplicazione-scomposizione');
+    msScomponiFattore1Parte1InputEl = document.getElementById('ms-scomponi-fattore-1-parte-1');
+    msSecondoFattoreDisplay1El = document.getElementById('ms-secondo-fattore-display-1');
+    msScomponiProdotto1InputEl = document.getElementById('ms-scomponi-prodotto-1');
+    msScomponiFattore1Parte2InputEl = document.getElementById('ms-scomponi-fattore-1-parte-2');
+    msSecondoFattoreDisplay2El = document.getElementById('ms-secondo-fattore-display-2');
+    msScomponiProdotto2InputEl = document.getElementById('ms-scomponi-prodotto-2');
+    msScomponiFattore1Parte3InputEl = document.getElementById('ms-scomponi-fattore-1-parte-3');
+    msSecondoFattoreDisplay3El = document.getElementById('ms-secondo-fattore-display-3');
+    msScomponiProdotto3InputEl = document.getElementById('ms-scomponi-prodotto-3');
+    msRispostaFinaleMoltiplicazioneInputEl = document.getElementById('ms-risposta-finale-moltiplicazione');
+    feedbackMoltiplicazioneScomposizioneEl = document.getElementById('feedback-moltiplicazione-scomposizione');
+    hintMoltiplicazioneScomposizioneEl = document.getElementById('hint-moltiplicazione-scomposizione');
+    msPassaggioScomponi1El = document.getElementById('ms-passaggio-scomponi-1');
+    msPassaggioScomponi2El = document.getElementById('ms-passaggio-scomponi-2');
+    msPassaggioScomponi3El = document.getElementById('ms-passaggio-scomponi-3');
+
+    if (!domandaMoltiplicazioneScomposizioneEl || !msScomponiFattore1Parte1InputEl || !moltiplicazioniScomposizioneSectionEl || !livelloMoltiplicazioneScomposizioneContainerEl) {
+        console.error("generaDomandaMoltiplicazioneScomposizione: Elementi DOM critici per la sezione moltiplicazioni non trovati.");
+        if (feedbackMoltiplicazioneScomposizioneEl) feedbackMoltiplicazioneScomposizioneEl.textContent = "Errore: elementi mancanti per questa modalità.";
         return;
     }
 
-    activeSection = 'tabelline';
-    tabellineSectionEl.style.display = 'block';
+    activeSection = 'moltiplicazioni-scomposizione';
+    tabellineSectionEl.style.display = 'none';
     divisioniSectionEl.style.display = 'none';
+    moltiplicazioniScomposizioneSectionEl.style.display = 'block';
     modalitaSceltaEl.style.display = 'none';
     gameContainerEl.style.display = 'block';
     livelloDivisioneContainerEl.style.display = 'none';
+    livelloMoltiplicazioneScomposizioneContainerEl.style.display = 'block';
 
-    domandaTabellinaEl = document.getElementById('domanda-tabellina');
-    rispostaTabellinaInputEl = document.getElementById('risposta-tabellina');
-    feedbackTabellinaEl = document.getElementById('feedback-tabellina');
+    currentCorrectAnswer = generaProblemaMoltiplicazioneScomposizione(livelloMoltiplicazioneScomposizione);
 
-    // Rimuovi listener precedente se esiste, per evitare duplicati
-    if (rispostaTabellinaInputEl && rispostaTabellinaInputEl.handleEnterKey) {
-        rispostaTabellinaInputEl.removeEventListener('keypress', rispostaTabellinaInputEl.handleEnterKey);
-    }
-
-    if (!domandaTabellinaEl) {
-        console.error("generaDomandaTabellina: Elemento 'domanda-tabellina' NON TROVATO. Impossibile generare domanda.");
-        if (feedbackTabellinaEl) feedbackTabellinaEl.textContent = "Errore: 'domanda-tabellina' non trovato."; else console.error("feedbackTabellinaEl non disponibile per messaggio errore.");
+    if (!currentCorrectAnswer || typeof currentCorrectAnswer.prodotto === 'undefined') {
+        console.error("CRITICAL: generaProblemaMoltiplicazioneScomposizione non ha restituito un oggetto problema valido.");
+        if (feedbackMoltiplicazioneScomposizioneEl) feedbackMoltiplicazioneScomposizioneEl.textContent = "Errore critico nella generazione del problema. Riprova.";
         return;
     }
-    if (!rispostaTabellinaInputEl) {
-        console.error("generaDomandaTabellina: Elemento 'risposta-tabellina' NON TROVATO. Impossibile accettare risposta.");
-        if (feedbackTabellinaEl) feedbackTabellinaEl.textContent = "Errore: 'risposta-tabellina' non trovato."; else console.error("feedbackTabellinaEl non disponibile per messaggio errore.");
-        return;
-    } else {
-        // Definisci la funzione handler qui in modo che possa essere rimossa correttamente
-        rispostaTabellinaInputEl.handleEnterKey = function(event) {
-            if (event.key === "Enter") {
-                event.preventDefault(); // Impedisce il comportamento predefinito (es. submit di un form)
-                controllaTabellina();
-            }
-        };
-        rispostaTabellinaInputEl.addEventListener('keypress', rispostaTabellinaInputEl.handleEnterKey);
-    }
-    if (!feedbackTabellinaEl) {
-        console.warn("generaDomandaTabellina: Elemento 'feedback-tabellina' non trovato. Il feedback non verrà mostrato.");
-    }
 
-    const num1 = Math.floor(Math.random() * 10) + 1;
-    const num2 = Math.floor(Math.random() * 10) + 1;
-    currentCorrectAnswer = num1 * num2;
-    console.log("[generaDomandaTabellina] Domanda generata. currentCorrectAnswer impostato a:", currentCorrectAnswer);
+    domandaMoltiplicazioneScomposizioneEl.textContent = `Quanto fa ${currentCorrectAnswer.fattore1} x ${currentCorrectAnswer.fattore2}? Scomponi ${currentCorrectAnswer.fattore1}.`;
 
-    domandaTabellinaEl.textContent = `${num1} x ${num2} = ?`;
-    rispostaTabellinaInputEl.value = '';
-    if (feedbackTabellinaEl) feedbackTabellinaEl.textContent = '';
-    rispostaTabellinaInputEl.focus();
+    if (msSecondoFattoreDisplay1El) msSecondoFattoreDisplay1El.textContent = currentCorrectAnswer.fattore2;
+    if (msSecondoFattoreDisplay2El) msSecondoFattoreDisplay2El.textContent = currentCorrectAnswer.fattore2;
+    if (msSecondoFattoreDisplay3El) msSecondoFattoreDisplay3El.textContent = currentCorrectAnswer.fattore2;
+
+    clearMoltiplicazioneScomposizioneInputs();
+    if (feedbackMoltiplicazioneScomposizioneEl) feedbackMoltiplicazioneScomposizioneEl.textContent = '';
+    if (hintMoltiplicazioneScomposizioneEl) hintMoltiplicazioneScomposizioneEl.textContent = '';
+
+    if (msPassaggioScomponi1El) msPassaggioScomponi1El.style.display = numScomposizioniMoltiplicazioneRichieste >= 1 ? 'flex' : 'none';
+    if (msPassaggioScomponi2El) msPassaggioScomponi2El.style.display = numScomposizioniMoltiplicazioneRichieste >= 2 ? 'flex' : 'none';
+    if (msPassaggioScomponi3El) msPassaggioScomponi3El.style.display = numScomposizioniMoltiplicazioneRichieste >= 3 ? 'flex' : 'none';
+
+    if (msScomponiFattore1Parte1InputEl) msScomponiFattore1Parte1InputEl.focus();
     questionStartTime = new Date();
-    console.log("generaDomandaTabellina: Fine esecuzione.");
+    console.log("generaDomandaMoltiplicazioneScomposizione: Fine.");
 }
 
-function controllaTabellina() {
-    console.log("[controllaTabellina] Inizio. Valore di currentCorrectAnswer:", currentCorrectAnswer);
-
-    if (!rispostaTabellinaInputEl || !feedbackTabellinaEl) {
-        console.error("controllaTabellina: Elementi rispostaTabellinaInputEl o feedbackTabellinaEl non inizializzati. Impossibile controllare.");
+function controllaMoltiplicazioneScomposizione() {
+    console.log("controllaMoltiplicazioneScomposizione: Placeholder. Logica da implementare.");
+    if (!currentCorrectAnswer || !feedbackMoltiplicazioneScomposizioneEl) {
+        console.error("controllaMoltiplicazioneScomposizione: currentCorrectAnswer o feedback non disponibili.");
         return;
     }
-    if (currentCorrectAnswer === undefined) {
-        console.error("controllaTabellina: currentCorrectAnswer è undefined. La domanda potrebbe non essere stata generata correttamente.");
-        feedbackTabellinaEl.textContent = "Errore: la domanda non è stata generata. Riprova a selezionare la modalità.";
-        feedbackTabellinaEl.className = 'feedback error';
-        return;
-    }
-    if (rispostaTabellinaInputEl.value === '') {
-        feedbackTabellinaEl.textContent = "Inserisci una risposta!";
-        feedbackTabellinaEl.className = 'feedback error';
-        return;
-    }
-
-    const rispostaUtente = parseInt(rispostaTabellinaInputEl.value);
     const elapsedTime = (new Date() - questionStartTime) / 1000;
 
-    if (rispostaUtente === currentCorrectAnswer) {
-        const bonus = calcolaPuntiBonus(elapsedTime);
-        updatePunteggio(1 + bonus);
-        feedbackTabellinaEl.textContent = `Corretto, ${playerName}! +${1 + bonus} punti.`;
-        feedbackTabellinaEl.className = 'feedback success';
-        playSound('success');
-        if (bonus === 2) playSound('awesome');
-        else if (bonus === 1) playSound('good');
-        setTimeout(generaDomandaTabellina, 1500);
-    } else {
-        feedbackTabellinaEl.textContent = `Sbagliato, ${playerName}. La risposta era ${currentCorrectAnswer}. Ritenta!`;
-        feedbackTabellinaEl.className = 'feedback error';
-        playSound('error');
-        rispostaTabellinaInputEl.value = '';
-        rispostaTabellinaInputEl.focus();
+    const parte1 = msScomponiFattore1Parte1InputEl.value !== '' ? parseInt(msScomponiFattore1Parte1InputEl.value) : null;
+    const prodotto1 = msScomponiProdotto1InputEl.value !== '' ? parseInt(msScomponiProdotto1InputEl.value) : null;
+    const parte2 = msScomponiFattore1Parte2InputEl.value !== '' ? parseInt(msScomponiFattore1Parte2InputEl.value) : null;
+    const prodotto2 = msScomponiProdotto2InputEl.value !== '' ? parseInt(msScomponiProdotto2InputEl.value) : null;
+    let parte3 = null;
+    let prodotto3 = null;
+    if (numScomposizioniMoltiplicazioneRichieste >= 3) {
+        parte3 = msScomponiFattore1Parte3InputEl.value !== '' ? parseInt(msScomponiFattore1Parte3InputEl.value) : null;
+        prodotto3 = msScomponiProdotto3InputEl.value !== '' ? parseInt(msScomponiProdotto3InputEl.value) : null;
     }
-}
+    const rispostaFinaleUtente = msRispostaFinaleMoltiplicazioneInputEl.value !== '' ? parseInt(msRispostaFinaleMoltiplicazioneInputEl.value) : null;
 
-function generaProblemaDivisione(livello) {
-    console.log("Generating division problem (no remainder) for level:", livello, "(Type:", typeof livello, ")");
-    let minDivisor, maxDivisor;
-    let minDividend_guideline, maxDividend_guideline; // Rinominato per chiarezza
-
-    // numScomposizioniRichieste è una variabile globale, viene aggiornata qui
-    switch (livello) {
-        case '1':
-            minDivisor = 2; maxDivisor = 9;
-            numScomposizioniRichieste = 1;
-            minDividend_guideline = 10; maxDividend_guideline = 99; // Es. dividendi a 2 cifre
-            break;
-        case '2':
-            minDivisor = 2; maxDivisor = 9;
-            numScomposizioniRichieste = 2;
-            minDividend_guideline = 50; maxDividend_guideline = 199; // Es. dividendi che portano a quozienti fino a 20 con divisori comuni
-            break;
-        case '3':
-            minDivisor = 2; maxDivisor = 9;
-            numScomposizioniRichieste = 3;
-            minDividend_guideline = 70; maxDividend_guideline = 299; // Es. dividendi che portano a quozienti fino a 30
-            break;
-        default:
-            console.warn("Unknown level passed to generaProblemaDivisione. Defaulting to level 1 settings.");
-            minDivisor = 2; maxDivisor = 9;
-            numScomposizioniRichieste = 1;
-            minDividend_guideline = 10; maxDividend_guideline = 99;
-    }
-
-    let min_total_quotient_for_level;
-    let max_total_quotient_for_level;
-
-    switch (livello) {
-        case '1':
-            min_total_quotient_for_level = 1; // Almeno 1
-            max_total_quotient_for_level = 10; // Massimo 10 per il quoziente totale
-            break;
-        case '2':
-            min_total_quotient_for_level = numScomposizioniRichieste; // Almeno 1 per ogni "passaggio ideale"
-            max_total_quotient_for_level = numScomposizioniRichieste * 10; // Es. 2 * 10 = 20
-            break;
-        case '3':
-            min_total_quotient_for_level = numScomposizioniRichieste;
-            max_total_quotient_for_level = numScomposizioniRichieste * 10; // Es. 3 * 10 = 30
-            break;
-        default: // Coerente con il default precedente
-            min_total_quotient_for_level = 1;
-            max_total_quotient_for_level = 10;
-    }
-    // Assicura che min non sia maggiore di max (non dovrebbe succedere con la logica attuale)
-    max_total_quotient_for_level = Math.max(max_total_quotient_for_level, min_total_quotient_for_level);
-
-
-    let dividend, divisor, quotient;
-    const remainder = 0; // Generiamo solo divisioni esatte
-    let attempts = 0;
-    const MAX_ATTEMPTS = 100; // Aumentato un po' per sicurezza con le guideline
-
-    do {
-        divisor = Math.floor(Math.random() * (maxDivisor - minDivisor + 1)) + minDivisor;
-        
-        // Assicurati che il range del quoziente sia valido
-        let current_max_q = max_total_quotient_for_level;
-        let current_min_q = min_total_quotient_for_level;
-
-        // Adatta il range del quoziente se necessario per rispettare le guideline del dividendo con il divisore scelto
-        // current_min_q = Math.max(current_min_q, Math.ceil(minDividend_guideline / divisor));
-        // current_max_q = Math.min(current_max_q, Math.floor(maxDividend_guideline / divisor));
-
-        if (current_min_q > current_max_q) { // Se il range del quoziente diventa invalido con questo divisore
-            attempts++;
-            if (attempts > MAX_ATTEMPTS / 2 && minDivisor < maxDivisor) { // Se fatica, prova a cambiare strategia di scelta del divisore
-                 // Potrebbe essere utile un log qui o una strategia di fallback più robusta se i range sono troppo stretti
-            }
-            continue; // Prova un altro divisore
-        }
-        
-        quotient = Math.floor(Math.random() * (current_max_q - current_min_q + 1)) + current_min_q;
-        dividend = divisor * quotient;
-        attempts++;
-
-        // Verifica primaria: il quoziente deve essere nel range definito per il livello
-        // (già garantito dalla scelta del quoziente, ma una doppia verifica non fa male)
-        // e il dividendo deve essere entro le linee guida di grandezza.
-        if (dividend >= minDividend_guideline && dividend <= maxDividend_guideline &&
-            quotient >= min_total_quotient_for_level && quotient <= max_total_quotient_for_level) {
-            break; // Problema valido trovato
-        }
-
-        if (attempts >= MAX_ATTEMPTS) {
-            console.warn(`Max attempts (${MAX_ATTEMPTS}) reached for level ${livello}. Using last generated values or a fallback.`);
-            // Fallback se non si trova un problema ideale: usa l'ultimo generato se il quoziente è valido,
-            // altrimenti crea un problema minimo.
-            if (!(quotient >= min_total_quotient_for_level && quotient <= max_total_quotient_for_level)) {
-                console.warn("Last generated quotient was outside limits. Creating minimal fallback.");
-                divisor = minDivisor; // Usa il divisore minimo
-                quotient = min_total_quotient_for_level;
-                dividend = divisor * quotient;
-            }
-            // Se il quoziente era valido ma il dividendo fuori guideline, lo usiamo comunque.
-            console.log(`Fallback problem for level ${livello}: ${dividend} ÷ ${divisor} = ${quotient}`);
-            break; 
-        }
-    } while (true);
-
-
-    console.log(`Division problem (no remainder): ${dividend} ÷ ${divisor} = ${quotient}. Steps: ${numScomposizioniRichieste}`);
-    return { dividend, divisor, quotient, remainder };
-}
-
-function generaDomandaDivisione(livelloSceltoParam) {
-    console.log("generaDomandaDivisione: Inizio esecuzione.");
-    if (livelloSceltoParam) {
-        console.log(`generaDomandaDivisione: Livello passato come parametro: '${livelloSceltoParam}'`);
-    }
-
-    let livelloToUse;
-    if (livelloSceltoParam) { // Se il livello viene cambiato MENTRE si è già in modalità divisione
-        livelloToUse = livelloSceltoParam;
-        // Assicurati che il select rifletta questo cambiamento se necessario (anche se l'evento 'change' dovrebbe gestirlo)
-        if (livelloDivisioneSelectEl && livelloDivisioneSelectEl.value !== livelloSceltoParam) {
-            livelloDivisioneSelectEl.value = livelloSceltoParam;
-        }
-    } else { // Se si entra in modalità divisione per la prima volta o si torna al menu e si riseleziona
-        if (livelloDivisioneSelectEl) {
-            livelloToUse = livelloDivisioneSelectEl.value; // Prende "1", "2", o "3" dalla select
-            console.log(`generaDomandaDivisione: Livello letto da select: '${livelloToUse}'`);
-        } else {
-            console.error("CRITICAL: livelloDivisioneSelectEl non trovato! Fallback a livello '1'.");
-            livelloToUse = '1'; // Fallback di emergenza
-        }
-    }
-
-    console.log(`generaDomandaDivisione: Livello determinato per il problema: '${livelloToUse}' (tipo: ${typeof livelloToUse})`);
-
-    if (!tabellineSectionEl || !divisioniSectionEl || !modalitaSceltaEl || !gameContainerEl || !livelloDivisioneContainerEl) {
-        console.error("generaDomandaDivisione: ERRORE CRITICO - Elementi contenitore globali non trovati. Impossibile continuare.");
-        return;
-    }
-    activeSection = 'divisioni';
-    tabellineSectionEl.style.display = 'none';
-    divisioniSectionEl.style.display = 'block';
-    modalitaSceltaEl.style.display = 'none';
-    gameContainerEl.style.display = 'block';
-    livelloDivisioneContainerEl.style.display = 'block';
-
-    domandaDivisioneEl = document.getElementById('domanda-divisione');
-    decompDividend1InputEl = document.getElementById('scomposizione-dividendo-1');
-    scompQuotient1InputEl = document.getElementById('scomposizione-quoziente-1');
-    decompDividend2InputEl = document.getElementById('scomposizione-dividendo-2');
-    scompQuotient2InputEl = document.getElementById('scomposizione-quoziente-2');
-    decompDividend3InputEl = document.getElementById('scomposizione-dividendo-3');
-    scompQuotient3InputEl = document.getElementById('scomposizione-quoziente-3');
-    rispostaFinaleDivisioneInputEl = document.getElementById('risposta-finale-divisione');
-    feedbackDivisioneEl = document.getElementById('feedback-divisione');
-    hintDivisioneEl = document.getElementById('hint-divisione');
-
-    const labelSommaQuozientiEl = document.getElementById('label-somma-quozienti');
-
-    if (!domandaDivisioneEl || !decompDividend1InputEl || !rispostaFinaleDivisioneInputEl || !feedbackDivisioneEl || !hintDivisioneEl) {
-        console.error("generaDomandaDivisione: Uno o più elementi specifici per la divisione non trovati. Es. 'domanda-divisione'. Impossibile generare domanda.");
-        if (feedbackDivisioneEl) feedbackDivisioneEl.textContent = "Errore: elementi per la divisione non trovati."; else console.error("feedbackDivisioneEl non disponibile per messaggio errore.");
-        return;
-    }
-
-    currentCorrectAnswer = generaProblemaDivisione(livelloToUse);
-
-    if (!currentCorrectAnswer || typeof currentCorrectAnswer.quotient === 'undefined') {
-        console.error("CRITICAL: generaProblemaDivisione non ha restituito un oggetto problema valido.");
-        if (feedbackDivisioneEl) feedbackDivisioneEl.textContent = "Errore critico nella generazione del problema. Riprova.";
-        return;
-    }
-
-    currentDividend = currentCorrectAnswer.dividend;
-    currentDivisor = currentCorrectAnswer.divisor;
-    console.log("[generaDomandaDivisione] Domanda generata. Oggetto currentCorrectAnswer impostato:", currentCorrectAnswer);
-
-    // Imposta il testo del divisore negli span dedicati
-    const scompDivisorDisplay1 = document.getElementById('scomp-divisor-display-1');
-    const scompDivisorDisplay2 = document.getElementById('scomp-divisor-display-2');
-    const scompDivisorDisplay3 = document.getElementById('scomp-divisor-display-3');
-
-    if (scompDivisorDisplay1) scompDivisorDisplay1.textContent = currentDivisor;
-    else console.warn("scomp-divisor-display-1 not found");
-    if (scompDivisorDisplay2) scompDivisorDisplay2.textContent = currentDivisor;
-    else console.warn("scomp-divisor-display-2 not found");
-    if (scompDivisorDisplay3) scompDivisorDisplay3.textContent = currentDivisor;
-    else console.warn("scomp-divisor-display-3 not found");
-
-    // Aggiorna la visibilità dei passaggi di scomposizione in base a numScomposizioniRichieste
-    // numScomposizioniRichieste è stato aggiornato in generaProblemaDivisione
-    if (scomposizionePassaggi && scomposizionePassaggi.length > 0) {
-        scomposizionePassaggi.forEach((passaggio, index) => {
-            if (passaggio) {
-                passaggio.style.display = index < numScomposizioniRichieste ? 'flex' : 'none';
-            } else {
-                console.warn(`scomposizione-passaggio-${index + 1} not found when trying to set visibility.`);
-            }
-        });
-    } else {
-        console.warn("scomposizionePassaggi array is not initialized or is empty. Cannot configure step visibility.");
-    }
-
-    domandaDivisioneEl.textContent = `${currentDividend} ÷ ${currentDivisor} = ?`;
-    clearDivisionInputs(); // Chiamata esistente
-    feedbackDivisioneEl.textContent = '';
-    hintDivisioneEl.textContent = '';
-
-    // Gestione visibilità campi specifici per livello
-    if (labelSommaQuozientiEl && rispostaFinaleDivisioneInputEl) {
-        if (livelloToUse === '1') {
-            labelSommaQuozientiEl.style.display = 'none';
-            rispostaFinaleDivisioneInputEl.style.display = 'none';
-        } else {
-            labelSommaQuozientiEl.style.display = 'inline'; // O il suo display CSS di default
-            rispostaFinaleDivisioneInputEl.style.display = 'inline-block'; // O il suo display CSS di default
-        }
-    } else {
-        if (!labelSommaQuozientiEl) console.warn("generaDomandaDivisione: Elemento 'label-somma-quozienti' non trovato.");
-    }
-
-    // Precompilazione e gestione focus per livello facile
-    if (decompDividend1InputEl) {
-        if (livelloToUse === '1') {
-            decompDividend1InputEl.value = currentDividend;
-            decompDividend1InputEl.readOnly = true;
-            if (scompQuotient1InputEl) {
-                scompQuotient1InputEl.focus(); 
-            } else if (rispostaFinaleDivisioneInputEl) {
-                rispostaFinaleDivisioneInputEl.focus(); // Fallback se scompQuotient1InputEl non esiste
-            }
-        } else {
-            decompDividend1InputEl.focus(); 
-        }
-    } else if (rispostaFinaleDivisioneInputEl) {
-         rispostaFinaleDivisioneInputEl.focus(); // Fallback generale se decompDividend1InputEl non esiste
-    }
-
-    questionStartTime = new Date();
-    console.log("generaDomandaDivisione: Fine esecuzione.");
-}
-
-function controllaDivisione() {
-    console.log("[controllaDivisione] Inizio. Valore di currentCorrectAnswer (oggetto):", currentCorrectAnswer);
-    console.log("[controllaDivisione] Livello attuale (da var globale numerica):", livelloDivisione);
-
-    const elapsedTime = (new Date() - questionStartTime) / 1000; // Dichiarata una sola volta qui
-
-    if (!feedbackDivisioneEl || !hintDivisioneEl) {
-        console.error("controllaDivisione: Elementi feedbackDivisioneEl o hintDivisioneEl non inizializzati.");
-        if (!rispostaFinaleDivisioneInputEl && livelloDivisione !== 1) {
-             console.error("controllaDivisione: Elementi DOM specifici per la divisione non inizializzati.");
-             return;
-        }
-    }
-    if (currentCorrectAnswer === undefined) {
-        console.error("controllaDivisione: currentCorrectAnswer è undefined.");
-        if (feedbackDivisioneEl) {
-            feedbackDivisioneEl.textContent = "Errore: la domanda di divisione non è stata generata. Riprova.";
-            feedbackDivisioneEl.className = 'feedback error';
-        }
-        return;
-    }
-
-    // Logica specifica per il Livello 1
-    if (livelloDivisione === 1) {
-        if (!scompQuotient1InputEl || !decompDividend1InputEl) {
-            console.error("controllaDivisione (Livello 1): scompQuotient1InputEl o decompDividend1InputEl non trovati.");
-            if (feedbackDivisioneEl) {
-                feedbackDivisioneEl.textContent = "Errore: campi input per livello 1 mancanti.";
-                feedbackDivisioneEl.className = 'feedback error';
-            }
-            return;
-        }
-
-        const scompQuotient1 = scompQuotient1InputEl.value !== '' ? parseInt(scompQuotient1InputEl.value) : null;
-
-        if (scompQuotient1 === null) {
-            feedbackDivisioneEl.textContent = "Inserisci il risultato!";
-            feedbackDivisioneEl.className = 'feedback error';
-            if (hintDivisioneEl) hintDivisioneEl.textContent = ''; // Clear previous hint
-            scompQuotient1InputEl.focus();
-            return;
-        }
-
-        if (scompQuotient1 === currentCorrectAnswer.quotient) {
-            const bonus = calcolaPuntiBonus(elapsedTime);
-            updatePunteggio(1 + bonus); // Moltiplicatore gestito in updatePunteggio
-            feedbackDivisioneEl.textContent = `Corretto, ${playerName}! +${1 + bonus} punti.`;
-            feedbackDivisioneEl.className = 'feedback success';
-            if (hintDivisioneEl) hintDivisioneEl.textContent = '';
-            playSound('success');
-            if (bonus === 2) playSound('awesome');
-            else if (bonus === 1) playSound('good');
-            setTimeout(generaDomandaDivisione, 2000);
-        } else {
-            feedbackDivisioneEl.textContent = `Sbagliato, ${playerName}. La risposta corretta è ${currentCorrectAnswer.quotient}.`;
-            feedbackDivisioneEl.className = 'feedback error';
-            if (hintDivisioneEl) {
-                hintDivisioneEl.textContent = `Ricorda: ${currentDividend} ÷ ${currentDivisor} = ?`;
-                // Non cancellare l'hint immediatamente, lascia che l'utente lo legga
-            }
-            playSound('error');
-            scompQuotient1InputEl.value = '';
-            scompQuotient1InputEl.focus();
-        }
-        return;
-    }
-
-    // Logica esistente per Livelli 2 e 3 (scomposizione multi-passaggio)
-    if (!rispostaFinaleDivisioneInputEl || !decompDividend1InputEl || !scompQuotient1InputEl) {
-        console.error("controllaDivisione (Livelli 2/3): Elementi DOM per scomposizione o risposta finale non inizializzati.");
-        if (feedbackDivisioneEl) {
-            feedbackDivisioneEl.textContent = "Errore: mancano campi per la scomposizione o la risposta finale.";
-            feedbackDivisioneEl.className = 'feedback error';
-        }
-        return;
-    }
-
-    if (rispostaFinaleDivisioneInputEl.value === '') {
-        feedbackDivisioneEl.textContent = "Inserisci la risposta finale!";
-        feedbackDivisioneEl.className = 'feedback error';
-        if (hintDivisioneEl) hintDivisioneEl.textContent = ''; // Clear previous hint
-        return;
-    }
-
-    const decompDividend1 = decompDividend1InputEl.value !== '' ? parseInt(decompDividend1InputEl.value) : null;
-    const scompQuotient1 = scompQuotient1InputEl.value !== '' ? parseInt(scompQuotient1InputEl.value) : null;
-    const decompDividend2 = decompDividend2InputEl.value !== '' ? parseInt(decompDividend2InputEl.value) : null;
-    const scompQuotient2 = scompQuotient2InputEl.value !== '' ? parseInt(scompQuotient2InputEl.value) : null;
-    const decompDividend3 = decompDividend3InputEl.value !== '' ? parseInt(decompDividend3InputEl.value) : null;
-    const scompQuotient3 = scompQuotient3InputEl.value !== '' ? parseInt(scompQuotient3InputEl.value) : null;
-    const rispostaFinaleUtente = rispostaFinaleDivisioneInputEl.value !== '' ? parseInt(rispostaFinaleDivisioneInputEl.value) : null;
-
-    let parzialeCorretto = true;
-    let quozienteParzialeTotale = 0;
-    let dividendoResiduo = currentDividend;
-    let hintMessage = "";
     let erroreScomposizione = false;
+    let hintMsg = "";
+    let sommaPartiCorretta = false;
+    let prodottiParzialiCorretti = true;
+    let sommaProdottiParzialiUtente = 0;
 
-    if (decompDividend1 !== null && scompQuotient1 !== null) {
-        if (decompDividend1 % currentDivisor === 0 && decompDividend1 / currentDivisor === scompQuotient1) {
-            quozienteParzialeTotale += scompQuotient1;
-            dividendoResiduo -= decompDividend1;
-        } else {
-            parzialeCorretto = false; erroreScomposizione = true;
-            hintMessage = `Controlla la prima scomposizione: ${decompDividend1} ÷ ${currentDivisor} non fa ${scompQuotient1}.`;
-        }
-    } else if (decompDividend1 !== null || scompQuotient1 !== null) { // Campi parzialmente riempiti
-        parzialeCorretto = false; erroreScomposizione = true;
-        hintMessage = "Completa entrambe le caselle per ogni riga di scomposizione usata.";
+    let sommaPartiUtente = 0;
+    if (parte1 !== null) sommaPartiUtente += parte1;
+    if (parte2 !== null) sommaPartiUtente += parte2;
+    if (parte3 !== null) sommaPartiUtente += parte3;
+
+    if (sommaPartiUtente !== currentCorrectAnswer.fattore1) {
+        erroreScomposizione = true;
+        hintMsg = `La somma delle parti (${sommaPartiUtente}) non corrisponde a ${currentCorrectAnswer.fattore1}.`;
+    } else {
+        sommaPartiCorretta = true;
     }
 
-    if (parzialeCorretto && decompDividend2 !== null && scompQuotient2 !== null) {
-        if (dividendoResiduo >= 0 && decompDividend2 <= dividendoResiduo && decompDividend2 % currentDivisor === 0 && decompDividend2 / currentDivisor === scompQuotient2) {
-            quozienteParzialeTotale += scompQuotient2;
-            dividendoResiduo -= decompDividend2;
-        } else {
-            parzialeCorretto = false; erroreScomposizione = true;
-            if (decompDividend2 > dividendoResiduo && dividendoResiduo >= 0) hintMessage = `Il secondo dividendo (${decompDividend2}) è maggiore del residuo (${dividendoResiduo}).`;
-            else if (dividendoResiduo < 0) hintMessage = `Hai già scomposto più del dividendo iniziale. Controlla i passaggi precedenti.`;
-            else hintMessage = `Controlla la seconda scomposizione: ${decompDividend2} ÷ ${currentDivisor} non fa ${scompQuotient2}.`;
+    if (sommaPartiCorretta) {
+        if (parte1 !== null && prodotto1 !== null) {
+            if (parte1 * currentCorrectAnswer.fattore2 !== prodotto1) { prodottiParzialiCorretti = false; hintMsg = `Controlla: ${parte1} x ${currentCorrectAnswer.fattore2} non fa ${prodotto1}.`; erroreScomposizione = true;}
+            else { sommaProdottiParzialiUtente += prodotto1; }
+        } else if (parte1 !== null || prodotto1 !== null) { prodottiParzialiCorretti = false; hintMsg = "Completa il primo passaggio (parte e prodotto)."; erroreScomposizione = true;}
+
+        if (prodottiParzialiCorretti && parte2 !== null && prodotto2 !== null) {
+            if (parte2 * currentCorrectAnswer.fattore2 !== prodotto2) { prodottiParzialiCorretti = false; hintMsg = `Controlla: ${parte2} x ${currentCorrectAnswer.fattore2} non fa ${prodotto2}.`; erroreScomposizione = true;}
+            else { sommaProdottiParzialiUtente += prodotto2; }
+        } else if (prodottiParzialiCorretti && (parte2 !== null || prodotto2 !== null)) { prodottiParzialiCorretti = false; hintMsg = "Completa il secondo passaggio (parte e prodotto)."; erroreScomposizione = true;}
+
+        if (prodottiParzialiCorretti && numScomposizioniMoltiplicazioneRichieste >= 3) {
+            if (parte3 !== null && prodotto3 !== null) {
+                if (parte3 * currentCorrectAnswer.fattore2 !== prodotto3) { prodottiParzialiCorretti = false; hintMsg = `Controlla: ${parte3} x ${currentCorrectAnswer.fattore2} non fa ${prodotto3}.`; erroreScomposizione = true;}
+                else { sommaProdottiParzialiUtente += prodotto3; }
+            } else if (prodottiParzialiCorretti && (parte3 !== null || prodotto3 !== null)) { prodottiParzialiCorretti = false; hintMsg = "Completa il terzo passaggio (parte e prodotto)."; erroreScomposizione = true;}
         }
-    } else if (parzialeCorretto && (decompDividend2 !== null || scompQuotient2 !== null)) { // Campi parzialmente riempiti
-        parzialeCorretto = false; erroreScomposizione = true;
-        hintMessage = "Completa entrambe le caselle per la seconda riga di scomposizione, se usata.";
     }
 
-    if (parzialeCorretto && decompDividend3 !== null && scompQuotient3 !== null) {
-        if (dividendoResiduo >= 0 && decompDividend3 <= dividendoResiduo && decompDividend3 % currentDivisor === 0 && decompDividend3 / currentDivisor === scompQuotient3) {
-            quozienteParzialeTotale += scompQuotient3;
-            dividendoResiduo -= decompDividend3;
-        } else {
-            parzialeCorretto = false; erroreScomposizione = true;
-            if (decompDividend3 > dividendoResiduo && dividendoResiduo >= 0) hintMessage = `Il terzo dividendo (${decompDividend3}) è maggiore del residuo (${dividendoResiduo}).`;
-            else if (dividendoResiduo < 0) hintMessage = `Hai già scomposto più del dividendo iniziale. Controlla i passaggi precedenti.`;
-            else hintMessage = `Controlla la terza scomposizione: ${decompDividend3} ÷ ${currentDivisor} non fa ${scompQuotient3}.`;
-        }
-    } else if (parzialeCorretto && (decompDividend3 !== null || scompQuotient3 !== null)) { // Campi parzialmente riempiti
-        parzialeCorretto = false; erroreScomposizione = true;
-        hintMessage = "Completa entrambe le caselle per la terza riga di scomposizione, se usata.";
+    const scomposizioneNonTentata = parte1 === null && prodotto1 === null && parte2 === null && prodotto2 === null && (numScomposizioniMoltiplicazioneRichieste < 3 || (parte3 === null && prodotto3 === null));
+
+    if (rispostaFinaleUtente === null && !erroreScomposizione && !scomposizioneNonTentata) {
+        feedbackMoltiplicazioneScomposizioneEl.textContent = "Inserisci la risposta finale!";
+        feedbackMoltiplicazioneScomposizioneEl.className = 'feedback error';
+        if (hintMoltiplicazioneScomposizioneEl) hintMoltiplicazioneScomposizioneEl.textContent = "Somma i prodotti parziali.";
+        return;
     }
-    
-    // Verifica finale se tutti i campi di scomposizione sono vuoti
-    const scomposizioneNonTentata = decompDividend1 === null && scompQuotient1 === null &&
-                                decompDividend2 === null && scompQuotient2 === null &&
-                                decompDividend3 === null && scompQuotient3 === null;
 
     if (erroreScomposizione) {
-        feedbackDivisioneEl.textContent = `Errore nella scomposizione, ${playerName}.`;
-        feedbackDivisioneEl.className = 'feedback error';
-        hintDivisioneEl.textContent = hintMessage; // L'hint persiste
+        feedbackMoltiplicazioneScomposizioneEl.textContent = `Errore nella scomposizione, ${playerName}.`;
+        feedbackMoltiplicazioneScomposizioneEl.className = 'feedback error';
+        if (hintMoltiplicazioneScomposizioneEl) hintMoltiplicazioneScomposizioneEl.textContent = hintMsg;
         playSound('error');
-    } else if (rispostaFinaleUtente === currentCorrectAnswer.quotient && quozienteParzialeTotale === currentCorrectAnswer.quotient && dividendoResiduo === 0 && !scomposizioneNonTentata) {
+    } else if (rispostaFinaleUtente === currentCorrectAnswer.prodotto && sommaPartiCorretta && prodottiParzialiCorretti && sommaProdottiParzialiUtente === currentCorrectAnswer.prodotto && !scomposizioneNonTentata) {
         const bonus = calcolaPuntiBonus(elapsedTime);
-        updatePunteggio(2 + bonus); // Moltiplicatore gestito in updatePunteggio
-        feedbackDivisioneEl.textContent = `Corretto, ${playerName}! Ottima scomposizione! +${2 + bonus} punti.`;
-        feedbackDivisioneEl.className = 'feedback success';
-        hintDivisioneEl.textContent = '';
+        const puntiGuadagnati = updatePunteggio(2 + bonus);
+        feedbackMoltiplicazioneScomposizioneEl.textContent = `Correttissimo, ${playerName}! Ottima scomposizione! +${puntiGuadagnati} punti.`;
+        feedbackMoltiplicazioneScomposizioneEl.className = 'feedback success';
+        if (hintMoltiplicazioneScomposizioneEl) hintMoltiplicazioneScomposizioneEl.textContent = '';
         playSound('success');
         if (bonus === 2) playSound('awesome'); else if (bonus === 1) playSound('good');
-        setTimeout(generaDomandaDivisione, 2000);
-    } else if (rispostaFinaleUtente === currentCorrectAnswer.quotient && scomposizioneNonTentata) {
+        setTimeout(generaDomandaMoltiplicazioneScomposizione, 2000);
+    } else if (rispostaFinaleUtente === currentCorrectAnswer.prodotto && scomposizioneNonTentata) {
         const bonus = calcolaPuntiBonus(elapsedTime);
-        updatePunteggio(1 + bonus); // Punteggio base minore, moltiplicatore gestito in updatePunteggio
-        feedbackDivisioneEl.textContent = `Risposta finale corretta, ${playerName}! +${1 + bonus} punti.`;
-        feedbackDivisioneEl.className = 'feedback success';
-        hintDivisioneEl.textContent = `La scomposizione aiuta a capire meglio! Provala la prossima volta.`; // Hint persiste per un po'
+        const puntiGuadagnati = updatePunteggio(1 + bonus);
+        feedbackMoltiplicazioneScomposizioneEl.textContent = `Risposta finale corretta, ${playerName}! +${puntiGuadagnati} punti.`;
+        feedbackMoltiplicazioneScomposizioneEl.className = 'feedback success';
+        if (hintMoltiplicazioneScomposizioneEl) hintMoltiplicazioneScomposizioneEl.textContent = `La prossima volta prova a usare la scomposizione! Aiuta a capire meglio.`;
         playSound('success');
         if (bonus >= 1) playSound('good');
         setTimeout(() => {
-            if (hintDivisioneEl.textContent === `La scomposizione aiuta a capire meglio! Provala la prossima volta.`) {
-                 hintDivisioneEl.textContent = ''; // Cancella l'hint dopo un po' se non è cambiato
+            if (hintMoltiplicazioneScomposizioneEl && hintMoltiplicazioneScomposizioneEl.textContent.startsWith('La prossima volta')) {
+                hintMoltiplicazioneScomposizioneEl.textContent = '';
             }
-            generaDomandaDivisione();
-        }, 3500); // Timeout più lungo per leggere l'hint
-    } else { // Risposta finale errata o scomposizione errata che porta a risultato finale errato
-        feedbackDivisioneEl.textContent = `Sbagliato, ${playerName}. La risposta corretta è ${currentCorrectAnswer.quotient}.`;
-        if (quozienteParzialeTotale !== currentCorrectAnswer.quotient || dividendoResiduo !== 0) {
-            if (!scomposizioneNonTentata){
-                 hintDivisioneEl.textContent = `La tua scomposizione porta a ${quozienteParzialeTotale} con un resto di ${dividendoResiduo}. Controlla i passaggi.`;
-            } else {
-                 hintDivisioneEl.textContent = `Prova a scomporre il dividendo (${currentDividend}) in parti più piccole.`;
-            }
-        } else if (rispostaFinaleUtente !== currentCorrectAnswer.quotient) {
-            // Questo caso implica che la scomposizione era corretta (quozienteParzialeTotale === currentCorrectAnswer.quotient && dividendoResiduo === 0)
-            // ma la rispostaFinaleUtente è diversa.
-            // Potrebbe accadere se l'utente corregge la scomposizione ma non la risposta finale, o viceversa.
-            hintDivisioneEl.textContent = `La scomposizione sembra corretta, ma la risposta finale (${rispostaFinaleUtente}) non corrisponde.`;
+            generaDomandaMoltiplicazioneScomposizione();
+        }, 3500);
+    } else {
+        feedbackMoltiplicazioneScomposizioneEl.textContent = `Sbagliato, ${playerName}. La risposta corretta è ${currentCorrectAnswer.prodotto}.`;
+        if (!sommaPartiCorretta) {
+            if (hintMoltiplicazioneScomposizioneEl) hintMoltiplicazioneScomposizioneEl.textContent = hintMsg;
+        } else if (!prodottiParzialiCorretti) {
+            if (hintMoltiplicazioneScomposizioneEl) hintMoltiplicazioneScomposizioneEl.textContent = hintMsg;
+        } else if (sommaProdottiParzialiUtente !== currentCorrectAnswer.prodotto && !scomposizioneNonTentata) {
+            if (hintMoltiplicazioneScomposizioneEl) hintMoltiplicazioneScomposizioneEl.textContent = `La scomposizione e i prodotti parziali sembrano corretti, ma la loro somma (${sommaProdottiParzialiUtente}) non dà il risultato finale.`;
+        } else if (rispostaFinaleUtente !== currentCorrectAnswer.prodotto) {
+            if (hintMoltiplicazioneScomposizioneEl) hintMoltiplicazioneScomposizioneEl.textContent = `La risposta finale (${rispostaFinaleUtente}) non è corretta.`;
         } else {
-            // Caso generico se nessun altro hint specifico è stato impostato
-            hintDivisioneEl.textContent = `Controlla la scomposizione e la risposta finale.`;
+            if (hintMoltiplicazioneScomposizioneEl) hintMoltiplicazioneScomposizioneEl.textContent = `Controlla tutti i passaggi e la risposta finale.`;
         }
-        feedbackDivisioneEl.className = 'feedback error';
+        feedbackMoltiplicazioneScomposizioneEl.className = 'feedback error';
         playSound('error');
-        // Non cancellare l'hint, lascia che l'utente lo legga
     }
 }
 
-function clearDivisionInputs() {
-    scomposizioneDividendoInputs.forEach(input => { 
-        if (input) {
-            input.value = ''; 
-            input.readOnly = false; // Resetta readOnly
-        }
-    });
-    scomposizioneQuozienteInputs.forEach(input => { if (input) input.value = ''; });
-    if (rispostaFinaleDivisioneInputEl) rispostaFinaleDivisioneInputEl.value = '';
-    if (restoFinaleDivisioneEl) restoFinaleDivisioneEl.value = '';
-}
-
-function mostraAiutoDivisione() {
-    if (!hintDivisioneEl || !currentDividend || !currentDivisor || currentDivisor === 0) {
-        console.warn("mostraAiutoDivisione: Impossibile fornire aiuto, dati mancanti o divisore nullo.");
-        if (hintDivisioneEl) hintDivisioneEl.textContent = "Non riesco a darti un aiuto specifico ora.";
+function mostraAiutoMoltiplicazioneScomposizione() {
+    console.log("mostraAiutoMoltiplicazioneScomposizione: Fornendo aiuto.");
+    if (!currentCorrectAnswer || !hintMoltiplicazioneScomposizioneEl) {
+        console.warn("mostraAiutoMoltiplicazioneScomposizione: currentCorrectAnswer o hintMoltiplicazioneScomposizioneEl non disponibili.");
+        if (hintMoltiplicazioneScomposizioneEl) hintMoltiplicazioneScomposizioneEl.textContent = "Suggerimento non disponibile al momento.";
         return;
     }
 
-    let suggerimentoDividendo1 = 0;
-    let quozienteSuggerito = Math.floor(currentDividend / currentDivisor / 2);
+    const { fattore1, fattore2, partiScomposte, numScomposizioni } = currentCorrectAnswer;
+    let hintMsg = "";
 
-    if (quozienteSuggerito > 0) {
-        suggerimentoDividendo1 = quozienteSuggerito * currentDivisor;
-    }
-
-    if (suggerimentoDividendo1 === 0 && currentDividend >= 2 * currentDivisor) {
-        suggerimentoDividendo1 = currentDivisor;
-    } else if (suggerimentoDividendo1 === 0) {
-        suggerimentoDividendo1 = currentDividend; 
-    }
-    
-    if (suggerimentoDividendo1 > currentDividend) {
-        suggerimentoDividendo1 = currentDividend - (currentDividend % currentDivisor);
-        if (suggerimentoDividendo1 === 0 && currentDividend > 0) suggerimentoDividendo1 = currentDividend;
-    }
-
-    if (suggerimentoDividendo1 > 0) {
-        const quozienteParzialeSuggerito = suggerimentoDividendo1 / currentDivisor;
-        hintDivisioneEl.textContent = `Potresti iniziare scomponendo ${suggerimentoDividendo1}. Quanto fa ${suggerimentoDividendo1} ÷ ${currentDivisor}? (Risposta: ${quozienteParzialeSuggerito}). Poi vedi cosa rimane.`;
-        if (scomposizioneDividendoInputs && scomposizioneDividendoInputs[0]) {
-            scomposizioneDividendoInputs[0].focus();
+    if (partiScomposte && partiScomposte.length === numScomposizioni && partiScomposte.every(p => p > 0) && partiScomposte.reduce((a,b)=>a+b,0) === fattore1) {
+        hintMsg = `Prova a scomporre ${fattore1} in ${numScomposizioni} parti. Ad esempio: ${partiScomposte.join(' + ')} (somma = ${partiScomposte.reduce((a,b)=>a+b,0)}).`;
+        hintMsg += ` Poi calcola i prodotti parziali:\n`;
+        for (let i = 0; i < partiScomposte.length; i++) {
+            hintMsg += `(${partiScomposte[i]} x ${fattore2}) = ${partiScomposte[i] * fattore2}`;
+            if (i < partiScomposte.length - 1) {
+                hintMsg += ",\n";
+            }
+        }
+        let sommaProdottiParziali = partiScomposte.map(p => p * fattore2).reduce((a,b)=>a+b,0);
+        hintMsg += `.\nInfine somma i prodotti parziali: ${partiScomposte.map(p => p * fattore2).join(' + ')} = ${sommaProdottiParziali}.`;
+        if (sommaProdottiParziali !== fattore1 * fattore2) {
+             console.warn("Hint logic error: Sum of partial products in hint does not match total product.");
+             hintMsg += ` (Attenzione: il prodotto totale dovrebbe essere ${fattore1*fattore2})`;
         }
     } else {
-        hintDivisioneEl.textContent = "Prova a trovare un numero facile da dividere per " + currentDivisor + " che sia parte di " + currentDividend + ".";
+        hintMsg = `Pensa a come puoi dividere ${fattore1} in ${numScomposizioni} numeri più facili (come decine e unità). Poi moltiplica ciascuna parte per ${fattore2} e somma i risultati.`;
+        console.warn("mostraAiutoMoltiplicazioneScomposizione: currentCorrectAnswer.partiScomposte non era ideale per il suggerimento. Parti: ", partiScomposte, "NumScomp:", numScomposizioni, "Fattore1:", fattore1);
     }
+    hintMoltiplicazioneScomposizioneEl.textContent = hintMsg;
+    hintMoltiplicazioneScomposizioneEl.style.whiteSpace = 'pre-line'; // Allow newlines in hint
     playSound('good');
 }
