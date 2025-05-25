@@ -189,9 +189,39 @@ button:active {
 
 /* Stile per il testo "Quanto fa..." e "Scomponi..." */
 #domanda-tabellina, #domanda-divisione, #scomposizione-steps p {
-    font-size: 1.2em; /* Testo delle domande più grande */
-    color: #4e342e; /* Marrone scuro, buon contrasto */
-    margin-bottom: 10px;
+    font-size: 1.3em; /* Testo più grande e leggibile */
+    color: #333; /* Colore testo scuro standard */
+    margin-bottom: 18px; /* Spazio sotto la domanda/titolo */
+    text-align: center; /* Assicura che il paragrafo sia centrato */
+}
+
+#scomposizione-steps {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centra i .scomposizione-passaggio-container */
+    margin-bottom: 15px; /* Spazio prima del risultato finale */
+}
+
+.scomposizione-passaggio-container {
+    display: flex;
+    align-items: center; /* Allinea verticalmente gli elementi interni (parentesi, input, span) */
+    margin-bottom: 10px; /* Spazio tra i passaggi, sostituisce i <br> se li rimuoviamo */
+    padding: 5px; /* Un po' di padding interno per respiro */
+}
+
+.scomposizione-passaggio-container > * {
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
+.scomposizione-passaggio-container input[type="number"] {
+    margin-top: 0; /* Sovrascrive il margine generale degli input se necessario per flex */
+    margin-bottom: 0; /* Sovrascrive il margine generale degli input */
+    padding: 8px;    /* Leggermente ridotto per un migliore allineamento con il testo normale */
+}
+
+.scomposizione-passaggio-container span { /* Es. per i divisori */
+    padding: 0 3px; /* Leggermente ridotto */
 }
 
 /* Stile per il wrapper dell'input e del bottone */

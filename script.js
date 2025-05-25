@@ -373,21 +373,19 @@ function generaDomandaDivisione(livelloSceltoParam) {
     }
 
     let livelloToUse;
-    if (livelloSceltoParam) {
+    if (livelloSceltoParam) { // Se il livello viene cambiato MENTRE si è già in modalità divisione
         livelloToUse = livelloSceltoParam;
-        const radioTarget = document.getElementById(`livello-${livelloSceltoParam.toLowerCase()}`);
-        if (radioTarget && !radioTarget.checked) {
-            radioTarget.checked = true;
+        // Assicurati che il select rifletta questo cambiamento se necessario (anche se l'evento 'change' dovrebbe gestirlo)
+        if (livelloDivisioneSelectEl && livelloDivisioneSelectEl.value !== livelloSceltoParam) {
+            livelloDivisioneSelectEl.value = livelloSceltoParam;
         }
-    } else {
-        const livelloSelezionatoRadio = document.querySelector('input[name="livello-divisione"]:checked');
-        if (livelloSelezionatoRadio) {
-            livelloToUse = livelloSelezionatoRadio.value;
+    } else { // Se si entra in modalità divisione per la prima volta o si torna al menu e si riseleziona
+        if (livelloDivisioneSelectEl) {
+            livelloToUse = livelloDivisioneSelectEl.value; // Prende "1", "2", o "3" dalla select
+            console.log(`generaDomandaDivisione: Livello letto da select: '${livelloToUse}'`);
         } else {
-            livelloToUse = 'facile';
-            console.warn("Nessun livello di divisione selezionato, default a 'facile' e seleziono radio.");
-            const radioFacile = document.getElementById('livello-facile');
-            if (radioFacile) radioFacile.checked = true;
+            console.error("CRITICAL: livelloDivisioneSelectEl non trovato! Fallback a livello '1'.");
+            livelloToUse = '1'; // Fallback di emergenza
         }
     }
 
@@ -421,11 +419,17 @@ function generaDomandaDivisione(livelloSceltoParam) {
         return;
     }
 
-    const { dividend, divisor, correctAnswer } = generaProblemaDivisione(livelloToUse);
-    currentDividend = dividend;
-    currentDivisor = divisor;
-    currentCorrectAnswer = correctAnswer;
-    console.log("[generaDomandaDivisione] Domanda generata. currentCorrectAnswer impostato a:", currentCorrectAnswer);
+    currentCorrectAnswer = generaProblemaDivisione(livelloToUse);
+
+    if (!currentCorrectAnswer || typeof currentCorrectAnswer.quotient === 'undefined') {
+        console.error("CRITICAL: generaProblemaDivisione non ha restituito un oggetto problema valido.");
+        if (feedbackDivisioneEl) feedbackDivisioneEl.textContent = "Errore critico nella generazione del problema. Riprova.";
+        return;
+    }
+
+    currentDividend = currentCorrectAnswer.dividend;
+    currentDivisor = currentCorrectAnswer.divisor;
+    console.log("[generaDomandaDivisione] Domanda generata. Oggetto currentCorrectAnswer impostato:", currentCorrectAnswer);
 
     domandaDivisioneEl.textContent = `${currentDividend} ÷ ${currentDivisor} = ?`;
     clearDivisionInputs();
@@ -458,31 +462,29 @@ function generaProblemaDivisione(livello) {
     }
 
     switch (livello) {
-        case 'facile':
+        case '1':
             minDividend = 10; maxDividend = 50;
             minDivisor = 2; maxDivisor = 5;
             numScomposizioniRichieste = 1;
             break;
-        case 'medio':
+        case '2':
             minDividend = 30; maxDividend = 150;
             minDivisor = 2; maxDivisor = 9;
             numScomposizioniRichieste = 2;
             break;
-        case 'difficile':
+        case '3':
             minDividend = 100; maxDividend = 500;
             minDivisor = 3; maxDivisor = 9;
             numScomposizioniRichieste = 3;
             break;
         default:
+            console.warn(`Livello divisione non riconosciuto: '${livello}'. Default a 1 passaggio.`);
             minDividend = 10; maxDividend = 50;
             minDivisor = 2; maxDivisor = 5;
             numScomposizioniRichieste = 1;
     }
 
     let minQuotientForSteps = numScomposizioniRichieste > 0 ? numScomposizioniRichieste : 1;
-    if (livello === 'facile' && minQuotientForSteps < 2) minQuotientForSteps = 2;
-    if (livello === 'medio' && minQuotientForSteps < 3) minQuotientForSteps = 3;
-    if (livello === 'difficile' && minQuotientForSteps < 4) minQuotientForSteps = 4;
 
     let dividend, divisor, quotient;
     let attempts = 0;
@@ -545,8 +547,6 @@ function generaProblemaDivisione(livello) {
         console.log("Using fallback problem:", { dividend, divisor, quotient });
     }
 
-    currentDivisor = divisor;
-    currentDividend = dividend;
     const remainder = 0;
 
     if (domandaDivisioneEl) {
@@ -588,13 +588,11 @@ function generaProblemaDivisione(livello) {
     if (feedbackDivisioneEl) feedbackDivisioneEl.textContent = '';
 
     console.log(`Division problem (no remainder): ${dividend} ÷ ${divisor} = ${quotient}. Steps: ${numScomposizioniRichieste}`);
-    questionStartTime = new Date();
-    currentCorrectAnswer = { dividend, divisor, quotient, remainder };
-    return currentCorrectAnswer;
+    return { dividend, divisor, quotient, remainder };
 }
 
 function controllaDivisione() {
-    console.log("[controllaDivisione] Inizio. Valore di currentCorrectAnswer:", currentCorrectAnswer);
+    console.log("[controllaDivisione] Inizio. Valore di currentCorrectAnswer (oggetto):", currentCorrectAnswer);
 
     if (!rispostaFinaleDivisioneInputEl || !feedbackDivisioneEl || !hintDivisioneEl) {
         console.error("controllaDivisione: Elementi DOM specifici per la divisione non inizializzati.");
@@ -673,7 +671,7 @@ function controllaDivisione() {
         feedbackDivisioneEl.className = 'feedback error';
         hintDivisioneEl.textContent = hintMessage;
         playSound('error');
-    } else if (rispostaFinaleUtente === currentCorrectAnswer && quozienteParzialeTotale === currentCorrectAnswer && dividendoResiduo === 0) {
+    } else if (rispostaFinaleUtente === currentCorrectAnswer.quotient && quozienteParzialeTotale === currentCorrectAnswer.quotient && dividendoResiduo === 0) {
         const bonus = calcolaPuntiBonus(elapsedTime);
         updatePunteggio(2 + bonus);
         feedbackDivisioneEl.textContent = `Corretto, ${playerName}! Ottima scomposizione! +${2 + bonus} punti.`;
@@ -682,7 +680,7 @@ function controllaDivisione() {
         playSound('success');
         if (bonus === 2) playSound('awesome'); else if (bonus === 1) playSound('good');
         setTimeout(generaDomandaDivisione, 2000);
-    } else if (rispostaFinaleUtente === currentCorrectAnswer && (decompDividend1 === null && decompDividend2 === null && decompDividend3 === null)) {
+    } else if (rispostaFinaleUtente === currentCorrectAnswer.quotient && (decompDividend1 === null && decompDividend2 === null && decompDividend3 === null)) {
         const bonus = calcolaPuntiBonus(elapsedTime);
         updatePunteggio(1 + bonus);
         feedbackDivisioneEl.textContent = `Risposta finale corretta, ${playerName}! +${1 + bonus} punti. La prossima volta prova a usare la scomposizione!`;
@@ -692,11 +690,11 @@ function controllaDivisione() {
         if (bonus >= 1) playSound('good');
         setTimeout(generaDomandaDivisione, 2500);
     } else {
-        feedbackDivisioneEl.textContent = `Sbagliato, ${playerName}. La risposta corretta è ${currentCorrectAnswer}.`;
-        if (quozienteParzialeTotale !== currentCorrectAnswer || dividendoResiduo !== 0) {
+        feedbackDivisioneEl.textContent = `Sbagliato, ${playerName}. La risposta corretta è ${currentCorrectAnswer.quotient}.`;
+        if (quozienteParzialeTotale !== currentCorrectAnswer.quotient || dividendoResiduo !== 0) {
             hintDivisioneEl.textContent = `La tua scomposizione porta a ${quozienteParzialeTotale} con un resto di ${dividendoResiduo}. Controlla i passaggi.`;
-        } else if (rispostaFinaleUtente !== currentCorrectAnswer) {
-            hintDivisioneEl.textContent = `La scomposizione sembra corretta, ma la risposta finale (${rispostaFinaleUtente}) non corrisponde.`;
+        } else if (rispostaFinaleUtente !== currentCorrectAnswer.quotient) {
+            hintDivisioneEl.textContent = `La scomposizione sembra corretta (somma quozienti parziali = ${quozienteParzialeTotale}, residuo = ${dividendoResiduo}), ma la risposta finale (${rispostaFinaleUtente}) non corrisponde al quoziente atteso (${currentCorrectAnswer.quotient}).`;
         } else {
             hintDivisioneEl.textContent = `Controlla la scomposizione e la risposta finale.`;
         }
@@ -713,4 +711,50 @@ function clearDivisionInputs() {
     if (decompDividend3InputEl) decompDividend3InputEl.value = '';
     if (scompQuotient3InputEl) scompQuotient3InputEl.value = '';
     if (rispostaFinaleDivisioneInputEl) rispostaFinaleDivisioneInputEl.value = '';
+    if (hintDivisioneEl) hintDivisioneEl.textContent = '';
+}
+
+function mostraAiutoDivisione() {
+    if (!hintDivisioneEl || !currentDividend || !currentDivisor || currentDivisor === 0) {
+        console.warn("mostraAiutoDivisione: Impossibile fornire aiuto, dati mancanti o divisore nullo.");
+        if (hintDivisioneEl) hintDivisioneEl.textContent = "Non riesco a darti un aiuto specifico ora.";
+        return;
+    }
+
+    // Prova a suggerire un primo passo per la scomposizione
+    // Cerchiamo un multiplo del divisore che sia una "buona parte" del dividendo
+    let suggerimentoDividendo1 = 0;
+    let quozienteSuggerito = Math.floor(currentDividend / currentDivisor / 2); // Prova con circa metà del quoziente totale
+
+    if (quozienteSuggerito > 0) {
+        suggerimentoDividendo1 = quozienteSuggerito * currentDivisor;
+    }
+
+    // Se il suggerimento è troppo piccolo (es. per divisioni piccole) o nullo, prova con il divisore stesso se il dividendo è almeno il doppio
+    if (suggerimentoDividendo1 === 0 && currentDividend >= 2 * currentDivisor) {
+        suggerimentoDividendo1 = currentDivisor;
+    } else if (suggerimentoDividendo1 === 0) {
+        // Caso estremo, non un gran suggerimento ma meglio di niente
+        suggerimentoDividendo1 = currentDividend; 
+    }
+    
+    // Assicurati che il suggerimento non sia più grande del dividendo stesso
+    if (suggerimentoDividendo1 > currentDividend) {
+        suggerimentoDividendo1 = currentDividend - (currentDividend % currentDivisor); // Il più grande multiplo <= dividendo
+        if (suggerimentoDividendo1 === 0 && currentDividend > 0) suggerimentoDividendo1 = currentDividend; // Se finisce a 0 ma c'è un dividendo
+    }
+
+    if (suggerimentoDividendo1 > 0) {
+        const quozienteParzialeSuggerito = suggerimentoDividendo1 / currentDivisor;
+        hintDivisioneEl.textContent = `Potresti iniziare scomponendo ${suggerimentoDividendo1}. Quanto fa ${suggerimentoDividendo1} ÷ ${currentDivisor}? (Risposta: ${quozienteParzialeSuggerito}). Poi vedi cosa rimane.`;
+        // Evidenzia il primo input del dividendo per la scomposizione
+        if (scomposizioneDividendoInputs && scomposizioneDividendoInputs[0]) {
+            scomposizioneDividendoInputs[0].focus();
+            // Potresti anche volerlo pre-compilare, ma per ora solo focus
+            // scomposizioneDividendoInputs[0].value = suggerimentoDividendo1;
+        }
+    } else {
+        hintDivisioneEl.textContent = "Prova a trovare un numero facile da dividere per " + currentDivisor + " che sia parte di " + currentDividend + ".";
+    }
+    playSound('good'); // Un suono per indicare che l'aiuto è stato dato
 }
