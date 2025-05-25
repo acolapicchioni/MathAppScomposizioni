@@ -94,13 +94,23 @@ button:active {
 #feedback-tabellina,
 #feedback-divisione {
     margin-top: 20px;
+    margin-left: auto; /* Center the block */
+    margin-right: auto; /* Center the block */
     font-weight: bold;
-    font-size: 1.15em; /* Testo feedback ancora più visibile */
+    font-size: 1.15em;
     padding: 12px 15px;
     border-radius: 8px;
-    display: inline-block;
-    min-width: 250px; /* Larghezza minima */
-    line-height: 1.5; /* Migliore leggibilità per messaggi lunghi */
+    display: block; /* Changed from inline-block for centering */
+    width: fit-content; /* Adjusts to content width */
+    min-width: 250px;   /* Minimum sensible width */
+    max-width: 80%;     /* Prevents it from being too wide on large screens */
+    text-align: center; /* Centers the text within the box */
+    line-height: 1.5;
+    background-color: #f0f0f0; /* Default light grey background */
+    border: 1px solid #ccc;    /* Default light grey border */
+    color: #333;               /* Default text color */
+    min-height: 1.5em;         /* Ensures visibility, relative to its font-size for one line */
+    box-sizing: border-box;    /* Includes padding and border in the element's total width and height */
 }
 
 /* Colori specifici per il feedback (sovrascrivono il colore testo di JS se necessario) */
@@ -219,17 +229,17 @@ button:active {
 }
 
 /* Stili per l'overlay e il box del nome */
-#name-prompt-overlay {
+#player-name-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.6); /* Sfondo semi-trasparente */
-    display: flex; /* Inizialmente none, gestito da JS */
+    background-color: rgba(0, 0, 0, 0.65); /* Semi-transparent background */
+    display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000; /* Assicura che sia sopra gli altri contenuti */
+    z-index: 1000; /* Ensures it's on top of other content */
 }
 
 #name-prompt-box {
@@ -320,4 +330,13 @@ button:active {
     border: 0;
     height: 1px;
     background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(255, 107, 120, 0.75), rgba(0, 0, 0, 0));
+}
+
+#welcome-message {
+    margin-top: 20px; /* Adds space above the message */
+    margin-bottom: 25px; /* Adds space below the message, before game mode selection */
+    color: #333333; /* Darker text for better readability */
+    font-size: 1.15em; /* Slightly larger font size */
+    line-height: 1.6; /* Improves readability for potentially multi-line messages */
+    /* text-align: center; is inherited from .container, so not needed here unless to override */
 }
