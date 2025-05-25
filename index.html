@@ -60,28 +60,10 @@
                 <p id="domanda-divisione"></p> 
                 <div id="scomposizione-steps">
                     <p>Scomponi la divisione (fino a 3 passaggi):</p>
-                    <!-- Passaggio 1 -->
-                    <div id="scomposizione-passaggio-1" class="scomposizione-passaggio-container">
-                        ( <input type="number" id="scomposizione-dividendo-1" class="scomp-input" placeholder="Dividendo 1"> / <span id="scomp-divisor-display-1"></span> ) = 
-                        <input type="number" id="scomposizione-quoziente-1" class="scomp-input-result" placeholder="Q1">
-                    </div>
-                    <br>
-                    <!-- Passaggio 2 -->
-                    <div id="scomposizione-passaggio-2" class="scomposizione-passaggio-container">
-                        ( <input type="number" id="scomposizione-dividendo-2" class="scomp-input" placeholder="Dividendo 2"> / <span id="scomp-divisor-display-2"></span> ) = 
-                        <input type="number" id="scomposizione-quoziente-2" class="scomp-input-result" placeholder="Q2">
-                    </div>
-                    <br>
-                    <!-- Passaggio 3 -->
-                    <div id="scomposizione-passaggio-3" class="scomposizione-passaggio-container">
-                        ( <input type="number" id="scomposizione-dividendo-3" class="scomp-input" placeholder="Dividendo 3"> / <span id="scomp-divisor-display-3"></span> ) = 
-                        <input type="number" id="scomposizione-quoziente-3" class="scomp-input-result" placeholder="Q3">
-                    </div>
-                    <br><br>
-                    <span id="label-somma-quozienti">Somma dei quozienti parziali = Risultato finale:</span>
-                    <input type="number" id="risposta-finale-divisione" class="scomp-input-final" placeholder="Risultato">
-                    <input type="number" id="resto-finale-divisione" class="scomp-input-final" placeholder="Resto" style="display: none;">
+                    <!-- Dynamically generated steps will be inserted here by script.js -->
                 </div>
+                <span id="label-somma-quozienti">Somma dei quozienti parziali = Risultato finale:</span>
+                <input type="number" id="risposta-finale-divisione" class="scomp-input-final" placeholder="Risultato">
                 <br>
                 <button onclick="controllaDivisione()">Controlla Divisione</button>
                 <button onclick="mostraAiutoDivisione()" id="bottone-aiuto-divisione">Aiuto!</button> 
