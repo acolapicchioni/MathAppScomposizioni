@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Matematica per Bambine</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="player-name-overlay">
+        <div id="name-prompt-box">
+            <h2>Come ti chiami?</h2>
+            <input type="text" id="player-name" placeholder="Scrivi qui il tuo nome">
+            <button id="start-game-button">Inizia a Giocare!</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>♥︎ Pratica di Matematica! ♥︎</h1>
+
+        <div id="score-container" style="display:none;">
+            <span id="player-name-display">Giocatore</span> - Punteggio: <span id="current-score">0</span> | Record: <span id="high-score">0</span>
+            <button id="nuova-partita-button">Nuova Partita</button>
+        </div>
+        
+        <p id="welcome-message"></p>
+
+        <div id="modalita-scelta" style="display:none;">
+            <button id="show-tabelline">Gioca con le Tabelline</button>
+            <button id="show-divisioni">Gioca con le Divisioni</button>
+        </div>
+
+        <div id="game-container" style="display:none;">
+            <div id="tabelline-section" class="game-section" style="display:none;">
+                <h2>🐾 Tabelline 🐾</h2>
+                <p id="domanda-tabellina"></p> 
+                <div class="controls-wrapper">
+                    <input type="number" id="risposta-tabellina" placeholder="La tua risposta">
+                    <button onclick="controllaTabellina()">Controlla</button>
+                </div>
+                <p id="feedback-tabellina"></p>
+            </div>
+
+            <hr id="section-divider" style="display:none;">
+
+            <div id="divisioni-section" class="game-section" style="display:none;">
+                <h2>🐾 Divisioni con Scomposizione 🐾</h2>
+                
+                <div id="livello-divisione-container" style="display:none;">
+                    <label for="livello-divisione-select">Scegli il livello: </label>
+                    <select id="livello-divisione-select">
+                        <option value="1">Facile</option>
+                        <option value="2">Medio</option>
+                        <option value="3">Difficile</option>
+                    </select>
+                </div>
+
+                <p id="domanda-divisione"></p> 
+                <div id="scomposizione-steps">
+                    <p>Scomponi la divisione (fino a 3 passaggi):</p>
+                    <!-- Passaggio 1 -->
+                    <div id="scomposizione-passaggio-1" class="scomposizione-passaggio-container">
+                        ( <input type="number" id="scomposizione-dividendo-1" class="scomp-input" placeholder="Dividendo 1"> / <span id="scomp-divisor-display-1"></span> ) = 
+                        <input type="number" id="scomposizione-quoziente-1" class="scomp-input-result" placeholder="Q1">
+                    </div>
+                    <br>
+                    <!-- Passaggio 2 -->
+                    <div id="scomposizione-passaggio-2" class="scomposizione-passaggio-container">
+                        ( <input type="number" id="scomposizione-dividendo-2" class="scomp-input" placeholder="Dividendo 2"> / <span id="scomp-divisor-display-2"></span> ) = 
+                        <input type="number" id="scomposizione-quoziente-2" class="scomp-input-result" placeholder="Q2">
+                    </div>
+                    <br>
+                    <!-- Passaggio 3 -->
+                    <div id="scomposizione-passaggio-3" class="scomposizione-passaggio-container">
+                        ( <input type="number" id="scomposizione-dividendo-3" class="scomp-input" placeholder="Dividendo 3"> / <span id="scomp-divisor-display-3"></span> ) = 
+                        <input type="number" id="scomposizione-quoziente-3" class="scomp-input-result" placeholder="Q3">
+                    </div>
+                    <br><br>
+                    Somma dei quozienti parziali = Risultato finale:
+                    <input type="number" id="risposta-finale-divisione" class="scomp-input-final" placeholder="Risultato">
+                    <input type="number" id="resto-finale-divisione" class="scomp-input-final" placeholder="Resto" style="display: none;">
+                </div>
+                <br>
+                <button onclick="controllaDivisione()">Controlla Divisione</button>
+                <button onclick="mostraAiutoDivisione()" id="bottone-aiuto-divisione">Aiuto!</button> 
+                <p id="feedback-divisione"></p>
+                <p id="hint-divisione" class="hint-text"></p> 
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

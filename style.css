@@ -1,0 +1,323 @@
+/* Importa un font da Google Fonts (deve essere la primissima riga) */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap');
+
+body {
+    font-family: 'Nunito', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    
+    /* background-color: #fff0f5; /* Rosa chiarissimo (Lavender Blush) - Lo teniamo come fallback */
+    background-color: #fff0f5; /* Fallback se l'immagine non carica o mentre carica */
+    background-image: url('watercolor.webp'); /* Il tuo pattern */
+    background-repeat: repeat; /* Assumendo che sia un pattern che si ripete */
+    /* Opzionale: puoi sperimentare con la dimensione del pattern se necessario */
+    /* background-size: 200px; /* Esempio: imposta la larghezza di ogni ripetizione del pattern */
+
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.container {
+    background-color: white;
+    padding: 30px 35px; /* Padding interno aumentato */
+    border-radius: 20px; /* Angoli più arrotondati */
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.12); /* Ombra più morbida e definita */
+    text-align: center; /* Centra il testo e gli elementi inline DENTRO il .container */
+    width: 100%;
+    max-width: 650px; /* Larghezza massima leggermente aumentata */
+}
+
+h1 {
+    color: #c71585; /* Rosa scuro/Medio Viola Rosso */
+    margin-bottom: 25px;
+    font-size: 2.2em; /* Dimensione titolo principale */
+}
+
+h2 {
+    color: #ff69b4; /* Rosa acceso (Hot Pink) */
+    margin-top: 35px; /* Più spazio sopra i titoli di sezione */
+    margin-bottom: 20px;
+    font-size: 1.8em; /* Dimensione titoli di sezione */
+}
+
+hr {
+    border: 0;
+    height: 1px;
+    background-image: linear-gradient(to right, rgba(255, 105, 180, 0), rgba(255, 105, 180, 0.5), rgba(255, 105, 180, 0)); /* Gradiente rosa per la linea */
+    margin: 35px 0;
+}
+
+input[type="number"] {
+    padding: 12px;
+    margin: 8px 5px;
+    border-radius: 8px; /* Angoli più arrotondati per input */
+    border: 1px solid #f8bbd0; /* Bordo rosa pastello */
+    font-size: 1.1em; /* Testo input più grande */
+    text-align: center;
+    width: 80px; /* Larghezza base input */
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); /* Piccola ombra interna */
+}
+
+.scomp-input, .scomp-input-result, .scomp-input-final {
+    width: 80px; /* Assicura consistenza */
+}
+
+button {
+    padding: 12px 22px;
+    background-color: #ff85a2; /* Rosa acceso per bottoni principali */
+    color: white;
+    border: none;
+    border-radius: 10px; /* Angoli più arrotondati */
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-top: 15px;
+    margin-bottom: 10px; /* Aggiunto margine inferiore */
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+button:hover {
+    background-color: #ff6b8f; /* Rosa più scuro per hover */
+    transform: scale(1.03); /* Leggero ingrandimento */
+}
+
+button:active {
+    transform: scale(0.98); /* Effetto "premuto" */
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Stili per i messaggi di feedback */
+#feedback-tabellina,
+#feedback-divisione {
+    margin-top: 20px;
+    font-weight: bold;
+    font-size: 1.15em; /* Testo feedback ancora più visibile */
+    padding: 12px 15px;
+    border-radius: 8px;
+    display: inline-block;
+    min-width: 250px; /* Larghezza minima */
+    line-height: 1.5; /* Migliore leggibilità per messaggi lunghi */
+}
+
+/* Colori specifici per il feedback (sovrascrivono il colore testo di JS se necessario) */
+#feedback-divisione[style*="color: green;"],
+#feedback-tabellina[style*="color: green;"] {
+    background-color: #e0f2f1; /* Verde acqua molto chiaro / menta */
+    border: 1px solid #4db6ac; /* Verde acqua */
+    color: #004d40 !important; /* Verde scuro per testo */
+}
+
+#feedback-divisione[style*="color: red;"],
+#feedback-tabellina[style*="color: red;"] {
+    background-color: #ffebee; /* Rosa chiarissimo per errore */
+    border: 1px solid #e57373; /* Rosso chiaro per bordo */
+    color: #b71c1c !important; /* Rosso scuro per testo */
+}
+
+#feedback-divisione[style*="color: orange;"],
+#feedback-tabellina[style*="color: orange;"] {
+    background-color: #fff3e0; /* Arancio chiarissimo */
+    border: 1px solid #ffb74d; /* Arancio chiaro per bordo */
+    color: #e65100 !important; /* Arancio scuro per testo */
+}
+
+/* Per il feedback "Ben fatto! ma prova anche..." (prima era blu) */
+#feedback-divisione[style*="color: rgb(0, 123, 255);"], /* Se JS usa ancora questo blu */
+#feedback-divisione[style*="color: #6a1b9a !important;"] /* Se JS usa il viola che avevamo messo */ {
+    background-color: #f3e5f5; /* Lilla chiarissimo */
+    border: 1px solid #ba68c8; /* Lilla/Viola chiaro per bordo */
+    color: #6a1b9a !important; /* Viola scuro per testo */
+}
+
+/* Stile specifico per l'input della risposta delle tabelline */
+#risposta-tabellina {
+    width: 160px; /* Aumenta la larghezza per accomodare il placeholder */
+    /* Puoi sperimentare con valori come 150px, 180px, ecc. */
+}
+
+/* Stili per la selezione del livello */
+.level-selection {
+    margin-top: 10px; /* Aggiunto margine sopra */
+    margin-bottom: 25px;
+    padding: 10px;
+    background-color: #fce4ec; /* Sfondo rosa molto chiaro per la sezione livelli */
+    border-radius: 12px;
+}
+
+.level-selection button {
+    background-color: #f48fb1; /* Rosa pastello per bottoni livelli */
+    color: #880e4f; /* Testo rosa scuro */
+    margin: 5px 8px; /* Aggiustato margine */
+    padding: 10px 18px;
+    font-size: 1em; /* Dimensione font per bottoni livello */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.level-selection button:hover {
+    background-color: #f06292; /* Rosa pastello più intenso */
+    transform: scale(1.03); /* Leggero ingrandimento */
+}
+
+/* Potresti aggiungere una classe 'active-level' via JS al bottone del livello corrente */
+.level-selection button.active-level {
+    background-color: #ad1457; /* Rosa scuro per livello attivo */
+    color: white;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+    transform: scale(1.05);
+}
+
+/* Span con i numeri fissi nella scomposizione */
+#scomposizione-steps span {
+    font-weight: bold;
+    color: #ec407a; /* Rosa più acceso per i numeri del divisore */
+    font-size: 1.1em; /* Leggermente più grandi */
+}
+
+/* Stile per il testo "Quanto fa..." e "Scomponi..." */
+#domanda-tabellina, #domanda-divisione, #scomposizione-steps p {
+    font-size: 1.2em; /* Testo delle domande più grande */
+    color: #4e342e; /* Marrone scuro, buon contrasto */
+    margin-bottom: 10px;
+}
+
+/* Stile per il wrapper dell'input e del bottone */
+.controls-wrapper {
+    display: flex;            /* Abilita Flexbox */
+    justify-content: center;  /* Centra gli elementi figli orizzontalmente */
+    align-items: center;    /* Allinea gli elementi figli verticalmente (utile se hanno altezze diverse) */
+    gap: 10px;                /* Spazio tra l'input e il bottone */
+    margin-top: 10px;         /* Spazio sopra il gruppo */
+    margin-bottom: 15px;      /* Spazio sotto il gruppo, prima del feedback */
+}
+
+/* Aggiungi a style.css */
+#bottone-aiuto-divisione {
+    background-color: #ffc107; /* Giallo/Ambra, tipico per aiuti */
+    color: #333; /* Testo scuro per contrasto */
+    margin-left: 10px; /* Spazio dal bottone "Controlla Divisione" */
+}
+
+#bottone-aiuto-divisione:hover {
+    background-color: #ffca28; /* Giallo leggermente più chiaro all'hover */
+}
+
+.hint-text {
+    margin-top: 15px;
+    padding: 10px 15px;
+    background-color: #fffde7; /* Giallo molto pallido per lo sfondo del suggerimento */
+    border: 1px solid #fff176; /* Bordo giallo chiaro */
+    border-radius: 8px;
+    color: #795548; /* Testo marroncino scuro per buona leggibilità */
+    font-style: italic; /* Corsivo per distinguere il suggerimento */
+    min-height: 20px; /* Per evitare che il box collassi quando è vuoto */
+    line-height: 1.5;
+    /* Inizialmente potrebbe essere vuoto, quindi non visibile finché non c'è testo */
+}
+
+/* Stili per l'overlay e il box del nome */
+#name-prompt-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* Sfondo semi-trasparente */
+    display: flex; /* Inizialmente none, gestito da JS */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Assicura che sia sopra gli altri contenuti */
+}
+
+#name-prompt-box {
+    background-color: #fff0f5; /* LavenderBlush, un rosa molto chiaro */
+    padding: 30px 40px;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    text-align: center;
+    border: 3px solid #ffc0cb; /* Pink border */
+}
+
+#name-prompt-box h2 {
+    color: #d1456d; /* Un rosa più scuro per il titolo */
+    margin-bottom: 20px;
+    font-size: 1.8em;
+}
+
+#name-prompt-box input[type="text"] {
+    width: 80%;
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 2px solid #fca3b7; /* Bordo rosa chiaro */
+    border-radius: 8px;
+    font-size: 1.1em;
+    text-align: center;
+}
+
+#name-prompt-box input[type="text"]:focus {
+    border-color: #ff85a2; /* Rosa più scuro al focus */
+    outline: none;
+}
+
+#name-prompt-box button {
+    padding: 12px 25px;
+    background-color: #ff69b4; /* HotPink */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+    transition: background-color 0.3s ease;
+}
+
+#name-prompt-box button:hover {
+    background-color: #d1456d; /* Rosa più scuro al hover */
+}
+
+/* Assicurati che il container principale sia nascosto all'inizio se il prompt è attivo */
+/* Questo viene gestito da JS, ma potresti volerlo di default se JS non carica subito */
+/*
+.container {
+    display: none; 
+}
+*/
+
+#game-selection-buttons {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#game-selection-buttons button {
+    background-color: #ff8c94; /* Un colore vivace per i bottoni di selezione */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    margin: 0 10px;
+    transition: background-color 0.3s ease;
+}
+
+#game-selection-buttons button:hover {
+    background-color: #ff6b78; /* Un colore leggermente più scuro al passaggio del mouse */
+}
+
+.game-section { /* Aggiungiamo una classe comune per le sezioni di gioco */
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+}
+
+#section-divider {
+    margin-top: 30px;
+    margin-bottom: 30px;
+    border: 0;
+    height: 1px;
+    background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(255, 107, 120, 0.75), rgba(0, 0, 0, 0));
+}

@@ -1,0 +1,13 @@
+# System files
+.DS_Store
+Thumbs.db
+
+# Editor specific files
+.vscode/
+*.code-workspace
+
+# Log files
+*.log
+
+# Local settings (if any)
+# local_settings.js

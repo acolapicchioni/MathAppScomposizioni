@@ -1,0 +1,28 @@
+name: CI
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    # Add steps to build, test, and deploy your project, if applicable
+    # For a simple static HTML/JS/CSS project, you might not need a build step
+    # Example: Linting HTML/CSS/JS
+    # - name: Lint HTML
+    #   uses: anmol098/w3c-html-validator@v1
+    #   with:
+    #     html_filename: 'index.html'
+    # - name: Lint CSS
+    #   uses: anmol098/w3c-css-validator@v1
+    #   with:
+    #     css_filename: 'style.css'
+    # - name: Lint JavaScript (using ESLint, requires setup)
+    #   run: |
+    #     npm install eslint
+    #     npx eslint script.js
+    - name: Deploy to GitHub Pages (optional)
+      if: github.ref == 'refs/heads/main' # Only deploy from main branch
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./
