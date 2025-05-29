@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>App Matematica per Bambine</title>
     <link rel="stylesheet" href="style.css">
+    <!-- <script src="script.js" defer></script> --> <!-- Commented out old script -->
+    <script type="module" src="js/main.js" defer></script> <!-- Added new modular script -->
 </head>
 <body>
     <div id="player-name-overlay">
@@ -37,7 +39,7 @@
                 <p id="domanda-tabellina"></p> 
                 <div class="controls-wrapper">
                     <input type="number" id="risposta-tabellina" placeholder="La tua risposta">
-                    <button onclick="controllaTabellina()">Controlla</button>
+                    <button id="controlla-tabellina-btn">Controlla</button>
                 </div>
                 <p id="feedback-tabellina"></p>
                 <button id="torna-menu-tabelline-btn" class="torna-menu-btn">Cambia Modalità</button>
@@ -65,8 +67,8 @@
                 <span id="label-somma-quozienti">Somma dei quozienti parziali = Risultato finale:</span>
                 <input type="number" id="risposta-finale-divisione" class="scomp-input-final" placeholder="Risultato">
                 <br>
-                <button onclick="controllaDivisione()">Controlla Divisione</button>
-                <button onclick="mostraAiutoDivisione()" id="bottone-aiuto-divisione">Aiuto!</button> 
+                <button id="controlla-divisione-btn">Controlla Divisione</button>
+                <button id="aiuto-divisione-btn">Aiuto!</button> 
                 <p id="feedback-divisione"></p>
                 <p id="hint-divisione" class="hint-text"></p> 
                 <button id="torna-menu-divisioni-btn" class="torna-menu-btn">Cambia Modalità</button>
@@ -113,14 +115,13 @@
                     <input type="number" id="ms-risposta-finale-moltiplicazione" class="scomp-input-final" placeholder="Risultato Totale">
                 </div>
                 <br>
-                <button onclick="controllaMoltiplicazioneScomposizione()">Controlla Moltiplicazione</button>
-                <button onclick="mostraAiutoMoltiplicazioneScomposizione()" id="ms-bottone-aiuto">Aiuto!</button> 
+                <button id="controlla-moltiplicazione-scomposizione-btn">Controlla Moltiplicazione</button>
+                <button id="aiuto-moltiplicazione-scomposizione-btn">Aiuto!</button> 
                 <p id="feedback-moltiplicazione-scomposizione"></p>
                 <p id="hint-moltiplicazione-scomposizione" class="hint-text"></p> 
                 <button id="torna-menu-moltiplicazioni-scomposizione-btn" class="torna-menu-btn">Cambia Modalità</button>
             </div>
         </div>
     </div>
-    <script src="script.js"></script>
 </body>
 </html>
